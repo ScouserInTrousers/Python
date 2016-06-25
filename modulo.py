@@ -8,7 +8,7 @@ def modulo(dividend, divisor):
 	:returns: 
 		remainder of the division problem  dividend / divisor as long as divisor is non-zero 
 	"""
-	if not all [isinstanceof(int, dividend), isinstanceof(int, divisor)]:
+	if not all [isinstanceof(dividend,int), isinstanceof(divisor,int)]:
 		print 'arguments must be integers'
 		break
 		
