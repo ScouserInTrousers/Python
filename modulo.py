@@ -7,13 +7,21 @@ def modulo(dividend, divisor):
 	:returns: 
 		remainder of the division problem  dividend / divisor as long as divisor is non-zero 
 	"""
-	if not all([isinstanceof(dividend,int), isinstanceof(divisor,int)]):
-		print 'arguments must be integers'
-		break
-		
-	if divisor == 0:
-		print 'cannot divide by 0'
-		break
-		
-	#To be edited later	
-	return dividend % divisor
+
+    if divisor == 0: 
+    	print 'Cannot divide by 0!'
+    	return
+
+    elif not (isinstance(dividend,int) & isinstance(divisor,int)): 
+        print 'Dividend AND divisor must be integers.'
+        return 
+
+    result = 0
+    if divisor == dividend: return result 
+    while dividend >= divisor: 
+        dividend -= divisor
+
+    result = dividend
+    return result 
+	
+	
