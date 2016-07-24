@@ -6,10 +6,10 @@ def isPrime(X, naive=True):
     
     #Error checking of the input
     assert type(X) == int;
-   
+
     #Special case of the input:
-    if X ==1: print 'False. 1 is not prime because the Fundamental Theorem of Arithmetic says so!'; return
-    
+    if X ==1: return False
+
     #Logic of the function 
     if X%2==0 and X!=2 or X%3==0 and X!=3:
         return False
@@ -39,7 +39,7 @@ def nearestPrime(X):
         return
 
 def decomposeInteger(X):
-    """Returns the dictionary of prime factors of the given integer, in the form of "prime: power". Credit for this implementation must go to the author: http://stackoverflow.com/a/412942/4747798"""
+    """Returns the dictionary of prime factors of the given integer, in the form of "prime: power". Credit for the implementation must go to the author: http://stackoverflow.com/a/412942/4747798"""
     assert type(X) == int
     #if isPrime(X): return (1, X)
     factors = []
@@ -55,6 +55,15 @@ def decomposeInteger(X):
     return {f:factors.count(f) for f in set(factors)}
     #sanity check: reduce(lambda x,y: x*y, map(pow, a.keys(),a.values())) == X
 
+def d(n):
+    """Returns the number of divisors of n. The Fundamental Theorem of Arithmetic guarantees that
+every given integer is a unique product of powers of primes; i.e. for all z in Z, 
+z = (p_1 ^ a_1 )*...*(p_n ^ a_n) for primes p_1, ..., p_n and integer powers a_1, ..., a_n.
+Moreover, there is a theorem that states that the number of factors of a given integer
+is equal to d(Z) = (a_1 + 1)*...*(a_n + 1). This function is an implementation of that
+theorem. More info at https://oeis.org/A000005"""
+    assert type(n) == int
+    return reduce( lambda x,y: x*y, [z+1 for z in decomposeInteger(n).values()])
 
 def pi(X):
     """This is an implementation of the Prime Counting Function, i.e. the amount of primes not exceeding X."""
@@ -62,17 +71,19 @@ def pi(X):
     if isPrime(X): return 1
     return len(decomposeInteger(X,True).keys())
 
-def antiPrime(n):
-    """This function returns the nth antiprime, i.e. the smallest composite integer with n prime factors. """
-    #The Fundamental Theorem of Arithmetic guarantees that every given integer
-    #is a unique product of powers of primes; i.e. Z = (p_1 ^ a_1 )*...*(p_n ^ a_n)
-    #for primes p_1, ..., p_n and integer powers a_1, ..., a_n. Moreover, there is a
-    #theorem that states that the number of factors of a given integer, d(Z), is equal
-    #to d(Z) = (a_1 + 1) *...*(a_n + 1). The calculation of num_factors below reflects
-    #this
-    num_factors = reduce( lambda x,y: x*y, [z+1 for z in  decomposeInteger(n).values()])
-    
-#What I want to be able to make is a function that returns tuples of the prime
-#factors and the powers on the primes, so that I can move forward with all the
-#fun theorems. Also, want to implement an antiprimes function i.e. the Numberphile
-#post about the nth most composite number 
+def nthMostDivisors(n):
+    """This function returns the nth highly composite number; i.e. composite integer
+with nth most divisors. E.g. 1 is the 1st antiprime because no integer has more
+factors; 2 is the second HCN because it has the most factors of all integers less
+than or equal to 2. More info at https://oeis.org/A002182"""
+    assert type(n) == int
+    if(n==1): return 1
+    integer = 1
+    num_factors = d(n)
+#    while integer <= max_hcn:
+#        if d(integer) == 2: integer+=1;continue
+        
+    #search_range = [z for z in range(1,n) if isPrime(z)==False]
+#Create a function that makes a call to OEIS and returns the URLs of the sequences in which
+#a given integer appears. Also, want to implement an antiprimes function i.e. the
+#Numberphile post about the nth most composite number 
