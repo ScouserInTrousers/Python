@@ -38,10 +38,10 @@ def nearestPrime(X):
         print 'Whoa, this is neat! There are two primes that are nearest to %d: %d and %d! Nobody knows if this happens infinitely often: see http://math.stackexchange.com/a/82668 for more details!' % (X, first_prime_before_x, first_prime_after_x)
         return
 
-def decomposeInteger(X, FToA = False):
-    """Returns the tuple of prime factors of the given integer. Credit for this implementation must go to the author: http://stackoverflow.com/a/412942/4747798"""
+def decomposeInteger(X):
+    """Returns the dictionary of prime factors of the given integer, in the form of "prime: power". Credit for this implementation must go to the author: http://stackoverflow.com/a/412942/4747798"""
     assert type(X) == int
-    if isPrime(X): return (1, X)
+    #if isPrime(X): return (1, X)
     factors = []
     d=2
     while X > 1:
@@ -52,9 +52,8 @@ def decomposeInteger(X, FToA = False):
         if d*d > X:
             if X > 1: factors.append(X)
             break
-    if not FToA: return tuple(factors)
-    else: return {f:factors.count(f) for f in set(factors)}
-    #sanity check: reduce(lambda x,y: x*y, map(pow, a.keys(),a.values()))i == X
+    return {f:factors.count(f) for f in set(factors)}
+    #sanity check: reduce(lambda x,y: x*y, map(pow, a.keys(),a.values())) == X
 
 
 def pi(X):
@@ -65,7 +64,15 @@ def pi(X):
 
 def antiPrime(n):
     """This function returns the nth antiprime, i.e. the smallest composite integer with n prime factors. """
-What I want to be able to make is a function that returns tuples of the prime
+    #The Fundamental Theorem of Arithmetic guarantees that every given integer
+    #is a unique product of powers of primes; i.e. Z = (p_1 ^ a_1 )*...*(p_n ^ a_n)
+    #for primes p_1, ..., p_n and integer powers a_1, ..., a_n. Moreover, there is a
+    #theorem that states that the number of factors of a given integer, d(Z), is equal
+    #to d(Z) = (a_1 + 1) *...*(a_n + 1). The calculation of num_factors below reflects
+    #this
+    num_factors = reduce( lambda x,y: x*y, [z+1 for z in  decomposeInteger(n).values()])
+    
+#What I want to be able to make is a function that returns tuples of the prime
 #factors and the powers on the primes, so that I can move forward with all the
 #fun theorems. Also, want to implement an antiprimes function i.e. the Numberphile
 #post about the nth most composite number 
