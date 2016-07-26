@@ -1,59 +1,5 @@
 #!/usr/bin/python
-#The purpose of this script is to give my intution about primes
-
-def isPrime(X, naive=True):
-    """Takes an integer, x, and returns whether that integer is prime"""
-    
-    #Error checking of the input
-    assert type(X) == int;
-
-    #Special case of the input:
-    if X ==1: return False
-
-    #Logic of the function 
-    if X%2==0 and X!=2 or X%3==0 and X!=3:
-        return False
-    for z in range(1, int((X**0.5+1)/6 + 1 )):
-        if X % (6*z-1) == 0 or X % (6*z+1) == 0:
-            return False
-    return True
-
-def nearestPrime(X):
-    """If X is returned as not prime via primeFinder.isPrime, this function finds the nearest prime number to it"""
-
-    if X == 1: print 'The nearest prime is 2';return
-    if isPrime(X): print 'The nearest prime is %d' % X; return 
-    first_prime_before_x = [z for i,z in enumerate(range(X-1,1,-1)) if isPrime(z)==True][0]
-    first_prime_after_x = X+1
-    while isPrime(first_prime_after_x) == False:
-        first_prime_after_x +=1
-
-    if cmp(abs(first_prime_before_x - X), abs(first_prime_after_x - X)) < 0:
-        print 'The nearest prime, %d, is only %d integers away.' % (first_prime_before_x, abs(first_prime_before_x - X))
-        return
-    elif cmp(abs(first_prime_before_x - X), abs(first_prime_after_x - X)) > 0:
-        print 'The nearest prime, %d, is only %d integers away.' % (first_prime_after_x, abs(first_prime_after_x - X))
-        return
-    else:
-        print 'Whoa, this is neat! There are two primes that are nearest to %d: %d and %d! Nobody knows if this happens infinitely often: see http://math.stackexchange.com/a/82668 for more details!' % (X, first_prime_before_x, first_prime_after_x)
-        return
-
-def decomposeInteger(X):
-    """Returns the dictionary of prime factors of the given integer, in the form of "prime: power". Credit for the implementation must go to the author: http://stackoverflow.com/a/412942/4747798"""
-    assert type(X) == int
-    #if isPrime(X): return (1, X)
-    factors = []
-    d=2
-    while X > 1:
-        while X % d == 0:
-            factors.append(d)
-            X /= d
-        d = d + 1
-        if d*d > X:
-            if X > 1: factors.append(X)
-            break
-    return {f:factors.count(f) for f in set(factors)}
-    #sanity check: reduce(lambda x,y: x*y, map(pow, a.keys(),a.values())) == X
+#Some fun with properties of the primes using only base Python
 
 def d(n):
     """Returns the number of divisors of n. The Fundamental Theorem of Arithmetic guarantees that
@@ -65,25 +11,80 @@ theorem. More info at https://oeis.org/A000005"""
     assert type(n) == int
     return reduce( lambda x,y: x*y, [z+1 for z in decomposeInteger(n).values()])
 
-def pi(X):
-    """This is an implementation of the Prime Counting Function, i.e. the amount of primes not exceeding X."""
-    assert type(X) == int
-    if isPrime(X): return 1
-    return len(decomposeInteger(X,True).keys())
+def decomposeInteger(z):
+    """Returns the dictionary of prime factors of the given integer, in the form of "prime: power". Credit for the implementation must go to the author: http://stackoverflow.com/a/412942/4747798"""
+    assert type(z) == int
+
+    factors = []
+    d=2
+    while z > 1:
+        while z % d == 0:
+            factors.append(d)
+            z /= d
+        d = d + 1
+        if d*d > z:
+            if z > 1: factors.append(z)
+            break
+    return {f:factors.count(f) for f in set(factors)}
+    #sanity check: reduce(lambda x,y: x*y, map(pow, a.keys(),a.values())) == z
+
+def isPrime(z):
+    """Takes an integer, z, and returns whether that integer is prime. This particular
+implementation inspired by https://pythonism.wordpress.com/2008/05/04/looking-at-prime-numbers-in-python/"""
+
+    assert type(z) == int;
+    if z==1: return False
+
+    if z%2==0 and z!=2 or z%3==0 and z!=3:
+        return False
+    for x in range(1, int((z**0.5+1)/6 + 1 )):
+        if z % (6*x-1) == 0 or z % (6*x+1) == 0:
+            return False
+    return True
+
+def nearestPrime(z):
+    """This function finds the nearest prime number to integer input X"""
+    assert type(z) == int
+
+    if z == 1: print 'The nearest prime is 2';return
+    if isPrime(z): print 'The nearest prime is %d' % z; return
+    first_prime_before_z = [x for i,x in enumerate(range(z-1,1,-1)) if isPrime(x)==True][0]
+    first_prime_after_z = z+1
+    while isPrime(first_prime_after_z) == False:
+        first_prime_after_z +=1
+
+    if cmp(abs(first_prime_before_z - z), abs(first_prime_after_z - z)) < 0:
+        print 'The nearest prime, %d, is only %d integers away.' % (first_prime_before_z, abs(first_prime_before_z - z))
+        return
+    elif cmp(abs(first_prime_before_z - z), abs(first_prime_after_z - z)) > 0:
+        print 'The nearest prime, %d, is only %d integers away.' % (first_prime_after_z, abs(first_prime_after_z - z))
+        return
+    else:
+        print 'Whoa, this is neat! There are two primes that are nearest to %d: %d and %d! Nobody knows if this happens infinitely often: see http://math.stackexchange.com/a/82668 for more details!' % (z, first_prime_before_z, first_prime_after_z)
+        return
 
 def nthMostDivisors(n):
     """This function returns the nth highly composite number; i.e. composite integer
-with nth most divisors. E.g. 1 is the 1st antiprime because no integer has more
+with nth most divisors. E.g. 1 is the 1st HCN because no integer has more
 factors; 2 is the second HCN because it has the most factors of all integers less
 than or equal to 2. More info at https://oeis.org/A002182"""
     assert type(n) == int
     if(n==1): return 1
-    integer = 1
-    num_factors = d(n)
-#    while integer <= max_hcn:
-#        if d(integer) == 2: integer+=1;continue
-        
-    #search_range = [z for z in range(1,n) if isPrime(z)==False]
-#Create a function that makes a call to OEIS and returns the URLs of the sequences in which
-#a given integer appears. Also, want to implement an antiprimes function i.e. the
+    record = [1]
+    z = 2
+    while z >= 2:
+        dz = d(z)
+        if d(z) == 2:
+            if len(record)==1: return 2
+            else: z+=1;continue
+        while dz > max(record) and len(record) < n:
+            record.append(d(z))
+        z += 1
+
+def pi(z):
+    """This is an implementation of the Prime Counting Function, i.e. the amount of primes not exceeding X."""
+    assert type(z) == int
+    return len( [x for x in range(1,z+1) if isPrime(x)])
+    #Possible speed up: return sum(map(isPrime, range(1,z+2)))
+#Create a function that makes a call to OEIS and returns the URLs of the sequences in which#a given integer appears. Also, want to implement an antiprimes function i.e. the
 #Numberphile post about the nth most composite number 
