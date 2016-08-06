@@ -9,6 +9,7 @@ Moreover, there is a theorem that states that the number of factors of a given i
 is equal to d(Z) = (a_1 + 1)*...*(a_n + 1). This function is an implementation of that
 theorem. More info at https://oeis.org/A000005"""
     assert type(n) == int
+    if n==1: return 1
     return reduce( lambda x,y: x*y, [z+1 for z in decomposeInteger(n).values()])
 
 def decomposeInteger(z):
@@ -43,7 +44,7 @@ implementation inspired by https://pythonism.wordpress.com/2008/05/04/looking-at
     return True
 
 def nearestPrime(z):
-    """This function finds the nearest prime number to integer input X"""
+    """This function finds the nearest prime number to integer input z"""
     assert type(z) == int
 
     if z == 1: print 'The nearest prime is 2';return
@@ -64,22 +65,50 @@ def nearestPrime(z):
         return
 
 def nthMostDivisors(n):
-    """This function returns the nth highly composite number; i.e. composite integer
-with nth most divisors. E.g. 1 is the 1st HCN because no integer has more
-factors; 2 is the second HCN because it has the most factors of all integers less
-than or equal to 2. More info at https://oeis.org/A002182"""
+    """This function returns the nth highly composite number; i.e. natural number
+with nth most divisors. E.g. 1 is the 1st HCN because no natural number has more
+factors; 2 is the second HCN because it has the most factors of all natural numbers
+less than or equal to 2. More info at https://oeis.org/A002182"""
     assert type(n) == int
+    assert n > 0
     if(n==1): return 1
     record = [1]
-    z = 2
-    while z >= 2:
+    z=2
+
+    while z >= 1:
+        #Get the number of divisors of the current integer
         dz = d(z)
+        #If the integer is prime, don't add dz and go to next integer
         if d(z) == 2:
-            if len(record)==1: return 2
-            else: z+=1;continue
-        while dz > max(record) and len(record) < n:
+            if z % 2 > 0:
+                z+=1
+                continue
+            else:
+                return 2
+
+        if dz > max(record):
             record.append(d(z))
-        z += 1
+            if length(record) == n:
+               break
+            else:
+                z+=1
+                continue
+        else:
+            z+=1
+            continue
+
+#    return z
+#    z=1
+#    hcn = set()
+#    while len(hcn) < n:
+#        hcn.add(d(z))
+#        z+=1
+#    #Want to return z-1 because on the last iteration when the correct
+#    #z has been found, it is still incremented before going to the next
+#    #whie iteration upon which the loop terminates.
+#    import pdb
+#    pdb.set_trace()
+#    return z-1
 
 def pi(z):
     """This is an implementation of the Prime Counting Function, i.e. the amount of primes not exceeding X."""
