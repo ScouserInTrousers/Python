@@ -76,44 +76,30 @@ less than or equal to 2. More info at https://oeis.org/A002182"""
     z=2
 
     while z >= 1:
-        #Get the number of divisors of the current integer
+        # Get the number of divisors of the current integer
         dz = d(z)
-        #If the integer is prime, don't add dz and go to next integer
-        if d(z) == 2:
-            if z % 2 > 0:
-                z+=1
-                continue
-            else:
-                return 2
-
+        # Main logic of the program
         if dz > max(record):
-            record.append(d(z))
-            if length(record) == n:
+            record.append(dz)
+            if len(record) == n:
                break
             else:
                 z+=1
                 continue
+        elif dz == max(record):
+            z += 1
+            continue
         else:
             z+=1
             continue
 
-#    return z
-#    z=1
-#    hcn = set()
-#    while len(hcn) < n:
-#        hcn.add(d(z))
-#        z+=1
-#    #Want to return z-1 because on the last iteration when the correct
-#    #z has been found, it is still incremented before going to the next
-#    #whie iteration upon which the loop terminates.
-#    import pdb
-#    pdb.set_trace()
-#    return z-1
+    return z
 
 def pi(z):
     """This is an implementation of the Prime Counting Function, i.e. the amount of primes not exceeding X."""
     assert type(z) == int
     return len( [x for x in range(1,z+1) if isPrime(x)])
     #Possible speed up: return sum(map(isPrime, range(1,z+2)))
+
 #Create a function that makes a call to OEIS and returns the URLs of the sequences in which#a given integer appears. Also, want to implement an antiprimes function i.e. the
 #Numberphile post about the nth most composite number 
