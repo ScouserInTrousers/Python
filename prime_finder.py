@@ -102,14 +102,12 @@ def pi(z):
     #Possible speed up: return sum(map(isPrime, range(1,z+2)))
 
 def text2int(textnum, numwords={}):
-        if not numwords:
-                  units = [
-                                  "zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
-                                          "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
-                                                  "sixteen", "seventeen", "eighteen", "nineteen",
-                                                        ]
+    if not numwords:
+    units = [ "zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+              "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
+              "sixteen", "seventeen", "eighteen", "nineteen"]
 
-                        tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+    tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
 
     scales = ["hundred", "thousand", "million", "billion", "trillion"]
 
