@@ -1,6 +1,8 @@
 #!/usr/bin/python
 #Some fun with properties of the primes using only base Python
 
+# TODO: Refactor the below to be methods of some class, Integer 
+
 def d(n):
     """Returns the number of divisors of n. The Fundamental Theorem of 
     Arithmetic guarantees that every given integer is a unique product of
@@ -12,9 +14,9 @@ def d(n):
     
     assert type(n) == int
     if n==1: return 1
-    return reduce( lambda x,y: x*y, [z+1 for z in decomposeInteger(n).values()])
+    return reduce( lambda x,y: x*y, [z+1 for z in decompose_integer(n).values()])
 
-def decomposeInteger(z):
+def decompose_integer(z):
     """Returns the dictionary of prime factors of the given integer, in the 
     form of "prime: power". Credit for the implementation must go to the 
     author: http://stackoverflow.com/a/412942/4747798"""
@@ -34,7 +36,7 @@ def decomposeInteger(z):
     return {f:factors.count(f) for f in set(factors)}
     #sanity check: reduce(lambda x,y: x*y, map(pow, a.keys(),a.values())) == z
 
-def isPrime(z):
+def is_prime(z):
     """Takes an integer, z, and returns whether that integer is prime. This
     particular implementation inspired by 
     https://pythonism.wordpress.com/2008/05/04/looking-at-prime-numbers-in-python/
@@ -50,38 +52,38 @@ def isPrime(z):
             return False
     return True
 
-def nearestPrime(z):
+def nearest_prime(z):
     """This function finds the nearest prime number to integer input z"""
     assert type(z) == int
 
     if z == 1:
         print 'The nearest prime is 2'
         return
-    if isPrime(z): 
+    if is_prime(z): 
         print 'The nearest prime is %d' % z
         return
 
-    first_prime_before_z = [x for i,x in enumerate(range(z-1,1,-1)) if isPrime(x)==True][0]
-    first_prime_after_z = z+1
-    while isPrime(first_prime_after_z) == False:
-        first_prime_after_z +=1
+    first_before_z = [x for i,x in enumerate(range(z-1,1,-1)) if is_prime(x)==True][0]
+    first_after_z = z+1
+    while is_prime(first_after_z) == False:
+        first_after_z +=1
 
-    if cmp(abs(first_prime_before_z - z), abs(first_prime_after_z - z)) < 0:
-        print 'The nearest prime, %d, is only %d integers away.' % 
-        (first_prime_before_z, abs(first_prime_before_z - z))
+    if cmp(abs(first_before_z - z), abs(first_after_z - z)) < 0:
+        print 'The nearest prime, {0}, is only {1} integers away.'.format(
+        first_before_z, abs(first_before_z - z) )
         return
-    elif cmp(abs(first_prime_before_z - z), abs(first_prime_after_z - z)) > 0:
-        print 'The nearest prime, %d, is only %d integers away.' % 
-        (first_prime_after_z, abs(first_prime_after_z - z))
+    elif cmp(abs(first_before_z - z), abs(first_after_z - z)) > 0:
+        print 'The nearest prime, {0}, is only {1} integers away.'.format( 
+        first_after_z, abs(first_after_z - z))
         return
     else:
         print 'Whoa, this is neat! There are two primes that are nearest to \
                 %d: %d and %d! Nobody knows if this happens infinitely often:\
-                see http://math.stackexchange.com/a/82668 for more details!' 
-                % (z, first_prime_before_z, first_prime_after_z)
+                see http://math.stackexchange.com/a/82668 \
+                for more details!'  % (z, first_before_z, first_after_z)
         return
 
-def nthMostDivisors(n):
+def nth_most_divisors(n):
     """This function returns the nth highly composite number; i.e. natural 
     number with nth most divisors. E.g. 1 is the 1st HCN because no natural
     number has more factors; 2 is the second HCN because it has the most 
@@ -119,8 +121,8 @@ def pi(z):
     amount of primes not exceeding X."""
     
     assert type(z) == int
-    return len( [x for x in range(1,z+1) if isPrime(x)])
-    #Possible speed up: return sum(map(isPrime, range(1,z+2)))
+    return len( [x for x in range(1,z+1) if is_prime(x)])
+    #Possible speed up: return sum(map(is_prime, range(1,z+2)))
 
 def text2int(textnum, numwords={}):
     if not numwords:
