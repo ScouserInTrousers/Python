@@ -33,6 +33,7 @@ def decompose_integer(z):
         if d*d > z:
             if z > 1: factors.append(z)
             break
+
     return {f:factors.count(f) for f in set(factors)}
     #sanity check: reduce(lambda x,y: x*y, map(pow, a.keys(),a.values())) == z
 
@@ -43,13 +44,17 @@ def is_prime(z):
     """
 
     assert type(z) == int;
-    if z==1: return False
+    
+    if z==1:
+        return False
 
     if z % 2 == 0 and z != 2 or z % 3 == 0 and z != 3:
         return False
+    
     for x in range(1, int((z**0.5+1)/6 + 1 )):
         if z % (6*x-1) == 0 or z % (6*x+1) == 0:
             return False
+
     return True
 
 def nearest_prime(z):
@@ -65,7 +70,7 @@ def nearest_prime(z):
 
     first_before_z = [x for i,x in enumerate(range(z-1,1,-1)) if is_prime(x)==True][0]
     first_after_z = z+1
-    while is_prime(first_after_z) == False:
+    while not is_prime(first_after_z):
         first_after_z +=1
 
     if cmp(abs(first_before_z - z), abs(first_after_z - z)) < 0:
@@ -92,7 +97,9 @@ def nth_most_divisors(n):
     
     assert type(n) == int
     assert n > 0
-    if(n==1): return 1
+
+    if(n==1):
+        return 1
     record = [1]
     z=2
 
@@ -121,7 +128,7 @@ def pi(z):
     amount of primes not exceeding X."""
     
     assert type(z) == int
-    return len( [x for x in range(1,z+1) if is_prime(x)])
+    return len( [x for x in range(1,z+1) if is_prime(x)] )
     #Possible speed up: return sum(map(is_prime, range(1,z+2)))
 
 def text2int(textnum, numwords={}):
