@@ -1,7 +1,81 @@
 #!/usr/bin/python
 #Some fun with properties of the primes using only base Python
 
-# TODO: Refactor the below to be methods of some class, Integer 
+class Integer(object):
+    def __init__(self, num):
+        # self.word = word
+        self.num = num
+        self.factorization = ' * '.join( [ str(k) + '^' + str(v) for k,v in
+            self.decompose().iteritems() ] ) if not self.is_prime() else str(self.num)
+        self.nearest_prime = self.nearest_prime()
+        self.num_divisors = reduce( lambda x,y: x*y, [z+1 for z in 
+            decompose_integer(self.num).values()] ) if self.num !=1 else 1
+        self.primality = "Prime" if self.is_prime() else "Composite"
+
+    def decompose(self):
+        """Returns the dictionary of prime factors of the given integer, in the 
+        form of "prime: power". Credit for the implementation must go to the 
+        author: http://stackoverflow.com/a/412942/4747798"""
+        
+        z = self.num
+
+        factors = []
+        d=2
+        while z > 1:
+            while z % d == 0:
+                factors.append(d)
+                z /= d
+            d = d + 1
+            if d*d > z:
+                if z > 1: factors.append(z)
+                break
+
+        return {f:factors.count(f) for f in set(factors)}
+
+    def is_prime(self):
+        """Takes an integer, z, and returns whether that integer is prime. This
+        particular implementation inspired by 
+        https://pythonism.wordpress.com/2008/05/04/looking-at-prime-numbers-in-python
+        """
+
+        z = self.num
+    
+        if z==1:
+            return False
+
+        if z % 2 == 0 and z != 2 or z % 3 == 0 and z != 3:
+            return False
+        
+        for x in range(1, int( (z**0.5+1)/6.0 + 1 )):
+            if z % (6*x - 1) == 0 or z % (6*x + 1) == 0:
+                return False
+        return True
+
+    def nearest_prime(self):
+        """This function finds the nearest prime number to integer input z"""
+        z = self.num
+        
+        if z == 1: return 2
+        if is_prime(z): return z
+
+        first_before_z = [x for i,x in enumerate(range(z-1,1,-1)) if is_prime(x)==True][0]
+        first_after_z = z+1
+        while not is_prime(first_after_z):
+            first_after_z +=1
+
+        if cmp(abs(first_before_z - z), abs(first_after_z - z)) < 0: return first_before_z
+            
+        elif cmp(abs(first_before_z - z), abs(first_after_z - z)) > 0: return first_after_z
+        else: return (first_before_z, first_after_z)
+
+    def pi(self):
+        """This is an implementation of the Prime Counting Function, i.e. the 
+        amount of primes not exceeding X."""
+        
+        z = self.num 
+        return len( [x for x in range(1,z+1) if is_prime(x)] )
+
+
 
 def d(n):
     """Returns the number of divisors of n. The Fundamental Theorem of 
@@ -40,7 +114,7 @@ def decompose_integer(z):
 def is_prime(z):
     """Takes an integer, z, and returns whether that integer is prime. This
     particular implementation inspired by 
-    https://pythonism.wordpress.com/2008/05/04/looking-at-prime-numbers-in-python/
+    https://pythonism.wordpress.com/2008/05/04/looking-at-prime-numbers-in-python
     """
 
     assert type(z) == int;
@@ -51,8 +125,8 @@ def is_prime(z):
     if z % 2 == 0 and z != 2 or z % 3 == 0 and z != 3:
         return False
     
-    for x in range(1, int((z**0.5+1)/6 + 1 )):
-        if z % (6*x-1) == 0 or z % (6*x+1) == 0:
+    for x in range(1, int( (z**0.5 + 1)/6.0 + 1 )):
+        if z % (6*x - 1) == 0 or z % (6*x + 1) == 0:
             return False
 
     return True
