@@ -2,15 +2,40 @@
 #Some fun with properties of the primes using only base Python
 
 class Integer(object):
+    _factorization = None
+    _num_divisors = None
+
     def __init__(self, num):
         # self.word = word
         self.num = num
-        self.factorization = ' * '.join( [ str(k) + '^' + str(v) for k,v in
-            self.decompose().iteritems() ] ) if not self.is_prime() else str(self.num)
         self.nearest_prime = self.nearest_prime()
-        self.num_divisors = reduce( lambda x,y: x*y, [z+1 for z in 
-            decompose_integer(self.num).values()] ) if self.num !=1 else 1
         self.primality = "Prime" if self.is_prime() else "Composite"
+    
+    @property
+    def factorization(self):
+        if self._factorization is None:
+            self._factorization =' * '.join([str(k)+'^'+str(v) for k,v in 
+               self.decompose().iteritems()]) 
+        return self._factorization
+
+    @property
+    def num_divisors(self):
+        """Returns the number of divisors of n. The Fundamental Theorem of 
+        Arithmetic guarantees that every given integer is a unique product of
+        powers of primes; i.e. for all z in Z, z = (p_1 ^ a_1 )*...*(p_n ^ a_n) for
+        primes p_1, ..., p_n and integer powers a_1, ..., a_n. Moreover, there is a
+        theorem that states that the number of factors of a given integer is equal 
+        to d(Z) = (a_1 + 1)*...*(a_n + 1). This function is an implementation of
+        that theorem. More info at https://oeis.org/A000005"""
+
+        if self._num_divisors is None:
+            if self.num == 1: 
+                self._num_divisors = 1
+                return self._num_divisors
+            else:
+                self._num_divisors = reduce(lambda x,y:x*y, 
+                    [z+1 for z in self.decompose().values()])
+        return self._num_divisors
 
     def decompose(self):
         """Returns the dictionary of prime factors of the given integer, in the 
@@ -31,6 +56,20 @@ class Integer(object):
                 break
 
         return {f:factors.count(f) for f in set(factors)}
+
+    def euler_totient(self):
+        #TODO: Implement Euler's totient function; i.e. the count of integers
+        #between 1 and z that are relatively prime to z
+        z = self.num
+        count = 0
+        # for x in range(1,z+1):
+        #     if 
+        pass
+
+    def gcd(self):
+        #TODO: Implement greatest common divisor function as class method in 
+        #order to facilitate other functions.
+        pass
 
     def is_prime(self):
         """Takes an integer, z, and returns whether that integer is prime. This
@@ -63,10 +102,12 @@ class Integer(object):
         while not is_prime(first_after_z):
             first_after_z +=1
 
-        if cmp(abs(first_before_z - z), abs(first_after_z - z)) < 0: return first_before_z
-            
-        elif cmp(abs(first_before_z - z), abs(first_after_z - z)) > 0: return first_after_z
-        else: return (first_before_z, first_after_z)
+        if cmp(abs(first_before_z - z), abs(first_after_z - z)) < 0:
+            return first_before_z
+        elif cmp(abs(first_before_z - z), abs(first_after_z - z)) > 0:
+            return first_after_z
+        else: 
+            return (first_before_z, first_after_z)
 
     def pi(self):
         """This is an implementation of the Prime Counting Function, i.e. the 
@@ -74,21 +115,6 @@ class Integer(object):
         
         z = self.num 
         return len( [x for x in range(1,z+1) if is_prime(x)] )
-
-
-
-def d(n):
-    """Returns the number of divisors of n. The Fundamental Theorem of 
-    Arithmetic guarantees that every given integer is a unique product of
-    powers of primes; i.e. for all z in Z, z = (p_1 ^ a_1 )*...*(p_n ^ a_n) for
-    primes p_1, ..., p_n and integer powers a_1, ..., a_n. Moreover, there is a
-    theorem that states that the number of factors of a given integer is equal 
-    to d(Z) = (a_1 + 1)*...*(a_n + 1). This function is an implementation of
-    that theorem. More info at https://oeis.org/A000005"""
-    
-    assert type(n) == int
-    if n==1: return 1
-    return reduce( lambda x,y: x*y, [z+1 for z in decompose_integer(n).values()])
 
 def decompose_integer(z):
     """Returns the dictionary of prime factors of the given integer, in the 
