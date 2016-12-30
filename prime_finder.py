@@ -11,6 +11,25 @@ class Integer(object):
         self.nearest_prime = self.nearest_prime()
         self.primality = "Prime" if self.is_prime() else "Composite"
     
+    def __repr__(self):
+        return 'Integer({!r})'.format(self.num)
+
+    def __add__(self,other):
+        num = self.num + other.num
+        return Integer(num)
+
+    def __mul__(self,other):
+        try:
+            num = self.num * other.num
+        except AttributeError:
+            num = self.num * other
+
+        return Integer(num)
+
+    # @property
+    # def primality(self):
+    #     return self._primality
+
     @property
     def factorization(self):
         if self._factorization is None:
@@ -22,11 +41,11 @@ class Integer(object):
     def num_divisors(self):
         """Returns the number of divisors of n. The Fundamental Theorem of 
         Arithmetic guarantees that every given integer is a unique product of
-        powers of primes; i.e. for all z in Z, z = (p_1 ^ a_1 )*...*(p_n ^ a_n) for
-        primes p_1, ..., p_n and integer powers a_1, ..., a_n. Moreover, there is a
-        theorem that states that the number of factors of a given integer is equal 
-        to d(Z) = (a_1 + 1)*...*(a_n + 1). This function is an implementation of
-        that theorem. More info at https://oeis.org/A000005"""
+        powers of primes; i.e. for all z in Z, z = (p_1 ^ a_1 )*...*(p_n ^ a_n)
+        for primes p_1, ..., p_n and integer powers a_1, ..., a_n. Moreover, 
+        there is a theorem that states that the number of factors of a given 
+        integer is equal to d(Z) = (a_1 + 1)*...*(a_n + 1). This function is an
+        implementation of that theorem. More info at https://oeis.org/A000005"""
 
         if self._num_divisors is None:
             if self.num == 1: 
@@ -143,7 +162,7 @@ def is_prime(z):
     https://pythonism.wordpress.com/2008/05/04/looking-at-prime-numbers-in-python
     """
 
-    assert type(z) == int;
+    # assert type(z) == int;
     
     if z==1:
         return False
