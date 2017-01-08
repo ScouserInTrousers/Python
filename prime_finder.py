@@ -1,92 +1,236 @@
 #!/usr/bin/python
 #Some fun with properties of the primes using only base Python
 
-# TODO: Refactor the below to be methods of some class, Integer 
+class Integer(object):
 
-def d(n):
-    """Returns the number of divisors of n. The Fundamental Theorem of 
-    Arithmetic guarantees that every given integer is a unique product of
-    powers of primes; i.e. for all z in Z, z = (p_1 ^ a_1 )*...*(p_n ^ a_n) for
-    primes p_1, ..., p_n and integer powers a_1, ..., a_n. Moreover, there is a
-    theorem that states that the number of factors of a given integer is equal 
-    to d(Z) = (a_1 + 1)*...*(a_n + 1). This function is an implementation of
-    that theorem. More info at https://oeis.org/A000005"""
+    def __init__(self, num):
+        self.num = num
     
-    assert type(n) == int
-    if n==1: return 1
-    return reduce( lambda x,y: x*y, [z+1 for z in decompose_integer(n).values()])
+    def __repr__(self):
+        return 'Integer({!r})'.format(self.num)
 
-def decompose_integer(z):
-    """Returns the dictionary of prime factors of the given integer, in the 
-    form of "prime: power". Credit for the implementation must go to the 
-    author: http://stackoverflow.com/a/412942/4747798"""
-    
-    assert type(z) == int
+    def __add__(self,other):
+        try:
+            num = self.num + other.num
+        except AttributeError:
+            num = self.num + other
 
-    factors = []
-    d=2
-    while z > 1:
-        while z % d == 0:
-            factors.append(d)
-            z /= d
-        d = d + 1
-        if d*d > z:
-            if z > 1: factors.append(z)
-            break
+        return Integer(num)
 
-    return {f:factors.count(f) for f in set(factors)}
-    #sanity check: reduce(lambda x,y: x*y, map(pow, a.keys(),a.values())) == z
+    def __mul__(self,other):
+        try:
+            num = self.num * other.num
+        except AttributeError:
+            num = self.num * other
 
-def is_prime(z):
-    """Takes an integer, z, and returns whether that integer is prime. This
-    particular implementation inspired by 
-    https://pythonism.wordpress.com/2008/05/04/looking-at-prime-numbers-in-python/
-    """
+        return Integer(num)
 
-    assert type(z) == int;
-    
-    if z==1:
-        return False
+    def __pow__(self,p):
+        num = self.num ** p
+        
+        return Integer(num)
 
-    if z % 2 == 0 and z != 2 or z % 3 == 0 and z != 3:
-        return False
-    
-    for x in range(1, int((z**0.5+1)/6 + 1 )):
-        if z % (6*x-1) == 0 or z % (6*x+1) == 0:
+    def __lt__(self,other):
+        return self.num < other
+
+    def __le__(self,other):
+        return self.num <= other
+
+    def __gt__(self,other):
+        return self.num > other
+
+    def __ge__(self,other):
+        return self.num >= other
+
+    def is_perfect_k(self,k):
+        """Returns whether the Integer is a perfect k-power e.g. square (k=2),
+        cube (k=3), etc.
+        """
+        return all(x%k==0 for x in self.decomposition.itervalues())
+
+    @staticmethod
+    def gcd(a,b):
+        """Greatest common divisor of two integers is the integer n that
+        satisfies max({n: a%n=0 & b%n=0, n <= a <= b})
+        """
+        #Note: could also frame this as set intersection of divisors of a,b
+        while b:
+            a, b = b, a%b
+        return a
+
+    @staticmethod
+    def is_prime(z):
+        """Takes an integer, z, and returns whether that integer is prime. This
+        particular implementation inspired by 
+        http://web.archive.org/web/20170108014244/https://pythonism.wordpress\
+        .com/2008/05/04/looking-at-prime-numbers-in-python/
+        """
+
+        if z==1:
             return False
 
-    return True
+        if z % 2 == 0 and z != 2 or z % 3 == 0 and z != 3:
+            return False
+        
+        for x in range(1, int( (z**0.5 + 1)/6.0 + 1 )):
+            if z % (6*x - 1) == 0 or z % (6*x + 1) == 0:
+                return False
 
-def nearest_prime(z):
-    """This function finds the nearest prime number to integer input z"""
-    assert type(z) == int
+        return True
 
-    if z == 1:
-        print 'The nearest prime is 2'
-        return
-    if is_prime(z): 
-        print 'The nearest prime is %d' % z
-        return
+    @property
+    def binary(self):
+        """Return Python binary of the integer
+        """
+        return bin(self.num)
 
-    first_before_z = [x for i,x in enumerate(range(z-1,1,-1)) if is_prime(x)==True][0]
-    first_after_z = z+1
-    while not is_prime(first_after_z):
-        first_after_z +=1
+    @property
+    def decomposition(self):
+         """Returns the dictionary of prime factors of the given integer, in the 
+         form of "prime: power". Credit for the implementation must go to the 
+         author: http://stackoverflow.com/a/412942/4747798"""
+         
+         z = self.num
 
-    if cmp(abs(first_before_z - z), abs(first_after_z - z)) < 0:
-        print 'The nearest prime, {0}, is only {1} integers away.'.format(
-        first_before_z, abs(first_before_z - z) )
-        return
-    elif cmp(abs(first_before_z - z), abs(first_after_z - z)) > 0:
-        print 'The nearest prime, {0}, is only {1} integers away.'.format( 
-        first_after_z, abs(first_after_z - z))
-        return
-    else:
-        print 'Whoa, this is neat! There are two primes that are nearest to \
-                %d: %d and %d! Nobody knows if this happens infinitely often:\
-                see http://math.stackexchange.com/a/82668 \
-                for more details!'  % (z, first_before_z, first_after_z)
-        return
+         factors = []
+         d=2
+         while z > 1:
+             while z % d == 0:
+                 factors.append(d)
+                 z /= d
+             d = d + 1
+             if d*d > z:
+                 if z > 1: factors.append(z)
+                 break
+
+         return {f:factors.count(f) for f in set(factors)}
+
+    @property
+    def divisors(self):
+        """Returns the set of divisors
+        """
+        return set(k**x for k,v in self.decomposition.iteritems()
+                for x in range(0,v+1) if k**x <= k**v)
+
+    @property
+    def euler_totient(self):
+        """phi(z) = count of integers <= z coprime to z 
+        """
+        return len(self.totatives)
+
+    @property
+    def factorization(self):
+        """Quasi-human rendering of prime decomposition
+        """
+        return ' * '.join([str(k)+'^'+str(v) for k,v in 
+           self.decomposition.iteritems()]) 
+
+    @property
+    def nearest_prime(self):
+        """This function finds the nearest prime number to integer input z"""
+
+        z = self.num
+        if z in (0, 1): return 2
+        if self.is_prime(z): return z
+
+        #Generator to get the first prime before z
+        def before(z):
+            i = z - 1
+            while True:
+                if self.is_prime(i):
+                    yield i
+                else:
+                    i -= 1
+                    continue
+
+        #Generator to get the first prime after z
+        def after(z):
+            i = z + 1
+            while True:
+                if self.is_prime(i):
+                    yield i
+                else:
+                    i += 1
+                    continue
+
+        first_before_z = before(z).next()
+        first_after_z = after(z).next()
+
+        if abs(first_before_z - z) < abs(first_after_z - z):
+            return first_before_z
+        if abs(first_before_z - z) > abs(first_after_z - z):
+            return first_after_z
+        else: 
+            return (first_before_z, first_after_z)
+
+    @property
+    def num_divisors(self):
+        """Returns the number of divisors of n. The Fundamental Theorem of 
+        Arithmetic guarantees that every given integer is a unique product of
+        powers of primes; i.e. for all z in Z, z = (p_1 ^ a_1 )*...*(p_n ^ a_n)
+        for primes p_1, ..., p_n and integer powers a_1, ..., a_n. Moreover, 
+        there is a theorem that states that the number of factors of a given 
+        integer is equal to d(Z) = (a_1 + 1)*...*(a_n + 1). This function is an
+        implementation of the theorem. More info at https://oeis.org/A000005"""
+
+        if self.num == 1: 
+            return 1
+        else:
+            return reduce(lambda x,y:x*y, 
+                [z+1 for z in self.decomposition.values()])
+
+    @property
+    def Omega(self):
+        """The total number of prime factors of n
+        """
+        return sum(self.decomposition.itervalues())
+
+    @property
+    def omega(self):
+        """The number of distinct prime factors of n
+        """
+        return len(self.decomposition)
+
+    @property
+    def pi(self):
+        """Prime Counting Function, i.e. the amount of primes not exceeding
+        Integer."""
+        #TODO: refactor this as a generator, with a producer and consumer
+        z = self.num 
+        return len([x for x in range(1,z+1) if self.is_prime(x)])
+
+    @property
+    def primality(self):
+        """"Prime" if prime, "Composite" if not
+        """
+        return "Prime" if self.is_prime(self.num) else "Composite"
+    
+    @property
+    def totatives(self):
+        """The totatives of z are the k in Z, 1<=k<=z, that are coprime to z
+        """
+        z = self.num
+        return set([x for x in range(1, z+1) if self.gcd(z, x) == 1])
+
+    # def is_prime(self):
+    #     """Takes an integer, z, and returns whether that integer is prime. This
+    #     particular implementation inspired by 
+    #     http://web.archive.org/web/20170108014244/https://pythonism.wordpress\
+    #     .com/2008/05/04/looking-at-prime-numbers-in-python/
+    #     """
+    #     z = self.num
+    
+    #     if z in (0, 1):
+    #         return False
+
+    #     if z % 2 == 0 and z != 2 or z % 3 == 0 and z != 3:
+    #         return False
+        
+    #     for x in range(1, int( (z**0.5+1)/6.0 + 1 )):
+    #         if z % (6*x - 1) == 0 or z % (6*x + 1) == 0:
+    #             return False
+    #     return True
+
 
 def nth_most_divisors(n):
     """This function returns the nth highly composite number; i.e. natural 
@@ -95,9 +239,6 @@ def nth_most_divisors(n):
     factors of all natural numbers less than or equal to 2. More info at 
     https://oeis.org/A002182"""
     
-    assert type(n) == int
-    assert n > 0
-
     if(n==1):
         return 1
     record = [1]
@@ -123,45 +264,14 @@ def nth_most_divisors(n):
 
     return z
 
-def pi(z):
-    """This is an implementation of the Prime Counting Function, i.e. the 
-    amount of primes not exceeding X."""
-    
-    assert type(z) == int
-    return len( [x for x in range(1,z+1) if is_prime(x)] )
-    #Possible speed up: return sum(map(is_prime, range(1,z+2)))
-
-def text2int(textnum, numwords={}):
-    if not numwords:
-        units = [ "zero", "one", "two", "three", "four", "five", "six", 
-                "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen"
-                , "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", 
-                "nineteen"]
-
-        tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", 
-                "seventy", "eighty", "ninety"]
-
-        scales = ["hundred", "thousand", "million", "billion", "trillion"]
-
-    numwords["and"] = (1, 0)
-    for idx, word in enumerate(units):    
-        numwords[word] = (1, idx)
-    for idx, word in enumerate(tens):     
-        numwords[word] = (1, idx * 10)
-    for idx, word in enumerate(scales):   
-        numwords[word] = (10 ** (idx * 3 or 2), 0)
-
-    current = result = 0
-    for word in textnum.split():
-        if word not in numwords:
-            raise Exception("Illegal word: " + word)
-
-        scale, increment = numwords[word]
-        current = current * scale + increment
-        if scale > 100:
-            result += current
-            current = 0
-
-    return result + current
 #Create a function that makes a call to OEIS and returns the URLs of the sequences in which#a given integer appears. Also, want to implement an antiprimes function i.e. the
 #Numberphile post about the nth most composite number 
+
+
+#TESTS:
+#two = Integer(2)
+#three = Integer(3)
+#Integer.gcd(2,3) == max(two.divisors & three.divisors)
+
+#twelve = Integer(12)
+#twelve.num == [k**v for k,v in twelve.decomposition.iteritems()][0]
