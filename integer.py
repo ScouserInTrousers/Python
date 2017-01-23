@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#Some fun with properties of the primes using only base Python
+#Ixnay on the import statements!
 
 class Integer(object):
 
@@ -17,7 +17,7 @@ class Integer(object):
 
         return Integer(num)
 
-    def __mul__(self,other):
+    def __mul__(self, other):
         try:
             num = self.num * other.num
         except AttributeError:
@@ -25,37 +25,37 @@ class Integer(object):
 
         return Integer(num)
 
-    def __pow__(self,p):
+    def __pow__(self, p):
         num = self.num ** p
         
         return Integer(num)
 
-    def __lt__(self,other):
+    def __lt__(self, other):
         return self.num < other
 
-    def __le__(self,other):
+    def __le__(self, other):
         return self.num <= other
 
-    def __gt__(self,other):
+    def __gt__(self, other):
         return self.num > other
 
-    def __ge__(self,other):
+    def __ge__(self, other):
         return self.num >= other
 
-    def is_perfect_k(self,k):
+    def is_perfect_k(self, k):
         """Returns whether the Integer is a perfect k-power e.g. square (k=2),
         cube (k=3), etc.
         """
-        return all(x%k==0 for x in self.decomposition.itervalues())
+        return all(x % k==0 for x in self.decomposition.itervalues())
 
     @staticmethod
-    def gcd(a,b):
+    def gcd(a, b):
         """Greatest common divisor of two integers is the integer n that
         satisfies max({n: a%n=0 & b%n=0, n <= a <= b})
         """
         #Note: could also frame this as set intersection of divisors of a,b
         while b:
-            a, b = b, a%b
+            a, b = b, a % b
         return a
 
     @staticmethod
@@ -66,10 +66,7 @@ class Integer(object):
         .com/2008/05/04/looking-at-prime-numbers-in-python/
         """
 
-        if z==1:
-            return False
-
-        if z % 2 == 0 and z != 2 or z % 3 == 0 and z != 3:
+        if z==1 or z % 2 == 0 and z != 2 or z % 3 == 0 and z != 3:
             return False
         
         for x in range(1, int( (z**0.5 + 1)/6.0 + 1 )):
@@ -77,7 +74,12 @@ class Integer(object):
                 return False
 
         return True
-
+	
+    #A clever implementation from SO:
+	#http://stackoverflow.com/a/27946768
+	# def is_prime(z):
+	# 	return n > 1 and all(n % k for k in xrange(2, int(n**0.5 + 1))
+	
     @property
     def binary(self):
         """Return Python binary of the integer
@@ -110,7 +112,7 @@ class Integer(object):
         """Returns the set of divisors
         """
         return set(k**x for k,v in self.decomposition.iteritems()
-                for x in range(0,v+1) if k**x <= k**v)
+                        for x in range(0,v+1) if k**x <= k**v)
 
     @property
     def euler_totient(self):
@@ -120,10 +122,10 @@ class Integer(object):
 
     @property
     def factorization(self):
-        """Quasi-human rendering of prime decomposition
+        """Quasi human-readable rendering of prime decomposition
         """
         return ' * '.join([str(k)+'^'+str(v) for k,v in 
-           self.decomposition.iteritems()]) 
+                           self.decomposition.iteritems()]) 
 
     @property
     def nearest_prime(self):
@@ -132,6 +134,10 @@ class Integer(object):
         z = self.num
         if z in (0, 1): return 2
         if self.is_prime(z): return z
+
+        #It is probably in violation of D.R.Y. to have these two generators
+        #be so similar yet separate. Refactoring seems that it would add
+        #complexity just for style points, however
 
         #Generator to get the first prime before z
         def before(z):
@@ -232,6 +238,34 @@ class Integer(object):
     #     return True
 
 
+def eratosthenes():
+	'''Yields the sequence of prime numbers via the Sieve of Eratosthenes.
+        Courtesy of David Eppstein, UC Irvine, 28 Feb 2002
+        http://code.activestate.com/recipes/117119/
+        '''
+	D = {}  # map composite integers to primes witnessing their compositeness
+	q = 2   # first integer to test for primality
+	while 1:
+            if q not in D:
+                yield q        # not marked composite, must be prime
+                D[q*q] = [q]   # first multiple of q not already marked
+            else:
+                for p in D[q]: # move each witness to its next multiple
+                    D.setdefault(p+q,[]).append(p)
+                del D[q]       # no longer need D[q], free memory
+            q += 1
+	#Version suggested in the comments
+	# while True:   
+	#     p = D.pop(q, None)
+	#     if p:
+	# 	x = p + q
+	# 	while x in D: x += p
+	# 	D[x] = p   
+	#     else:
+	# 	D[q*q] = q
+	# 	yield q
+	#     q += 1
+
 def nth_most_divisors(n):
     """This function returns the nth highly composite number; i.e. natural 
     number with nth most divisors. E.g. 1 is the 1st HCN because no natural
@@ -242,11 +276,11 @@ def nth_most_divisors(n):
     if(n==1):
         return 1
     record = [1]
-    z=2
+    z = 2
 
     while z >= 1:
         # Get the number of divisors of the current integer
-        dz = d(z)
+        dz = len(Integer(z).divisors)
         # Main logic of the program
         if dz > max(record):
             record.append(dz)
