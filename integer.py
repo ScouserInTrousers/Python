@@ -75,11 +75,17 @@ class Integer(object):
         else:
             return not eq_result
 
-    def is_perfect_k(self, k):
+    def is_perfect(self, k):
         """Returns whether the Integer is a perfect k-power e.g. square (k=2),
         cube (k=3), etc.
         """
         return all(x % k == 0 for x in self.decomposition.itervalues())
+
+    def is_power_of(self, n):
+        """Is the integer, z, a power of n? I.e. z is a power of n <==>
+        z = n^k for some integers n,k. E.g. 8 is a power of 2 because 8 = 2^3
+        """
+        return self.decomposition.keys() == [n]
 
     @property
     def binary(self):
@@ -91,7 +97,7 @@ class Integer(object):
     def parity(self):
         """Return whether integer is even or odd
         """
-        return 'Even' if self.num % 2 == 0 else 'Odd'
+        return 'Odd' if self.num % 2 else 'Even'
 
     @property
     def decomposition(self):
@@ -136,6 +142,40 @@ class Integer(object):
         """
         return ' * '.join([str(k) + '^' + str(v) for k, v in
                            self.decomposition.iteritems()])
+
+    @property
+    def is_mersenne(self):
+        """A Mersenne number is an integer, M, such that M = 2^k - 1, for some
+        integer k
+        """
+        return Integer(self.num + 1).is_power_of(2)
+
+    @property
+    def is_mersenne_prime(self):
+        """A Mersenne prime is a prime, p, of the form p = 2^k - 1, where
+        k is an integer
+        """
+        return is_prime(self.num) and self.is_mersenne
+
+    @property
+    def is_woodall(self):
+        """A Woodall number is an integer, W, of the form W = k*2^k - 1, where
+        k is an integer
+        """
+        if self.num < 1:
+            return False
+        w = Integer(self.num + 1)
+        try:
+            return w.decomposition[2] * pow(2, w.decomposition[2]) == w
+        except KeyError:
+            return False
+
+    @property
+    def is_woodall_prime(self):
+        """A Woodall prime is a prime, p, of the form p = n*2^n - 1, where
+        n is an integer
+        """
+        return is_prime(self.num) and self.is_woodall
 
     @property
     def nearest_prime(self):
@@ -234,7 +274,8 @@ class Integer(object):
         z = self.num
         if z == 0:
             return None
-        return set([x for x in range(1, z+1) if self.gcd(z, x) == 1])
+        return set([x for x in range(1, z+1) if gcd(z, x) == 1])
+
 
 # def eratosthenes():
 # 	'''Yields the sequence of prime numbers via the Sieve of Eratosthenes.
@@ -270,7 +311,8 @@ def nth_most_divisors(n):
     number with nth most divisors. E.g. 1 is the 1st HCN because no natural
     number has more factors; 2 is the second HCN because it has the most
     factors of all natural numbers less than or equal to 2. More info at
-    https://oeis.org/A002182"""
+    https://oeis.org/A002182
+    """
 
     if(n == 1):
         return 1
