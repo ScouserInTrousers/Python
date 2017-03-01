@@ -75,7 +75,7 @@ class Integer(object):
         else:
             return not eq_result
 
-    def is_perfect(self, k):
+    def is_perfect_power(self, k):
         """Returns whether the Integer is a perfect k-power e.g. square (k=2),
         cube (k=3), etc.
         """
@@ -92,12 +92,6 @@ class Integer(object):
         """Return Python binary of the integer
         """
         return bin(self.num)
-
-    @property
-    def parity(self):
-        """Return whether integer is even or odd
-        """
-        return 'Odd' if self.num % 2 else 'Even'
 
     @property
     def decomposition(self):
@@ -127,8 +121,9 @@ class Integer(object):
     def divisors(self):
         """Returns the set of divisors
         """
-        return set(k ** x for k, v in self.decomposition.iteritems()
-                   for x in range(0, v+1) if k ** x <= k ** v)
+        # This is a temporary solution to robustly returning the
+        # divisors using a cross-product of possible multiplicands
+        return {x for x in xrange(1, self.num+1) if self.num % x == 0}
 
     @property
     def euler_totient(self):
@@ -156,6 +151,10 @@ class Integer(object):
         k is an integer
         """
         return is_prime(self.num) and self.is_mersenne
+
+    @property
+    def is_perfect(self):
+        return self.sigma == 2 * self.num
 
     @property
     def is_woodall(self):
@@ -224,7 +223,46 @@ class Integer(object):
             return (first_before_z, first_after_z)
 
     @property
-    def num_divisors(self):
+    def Omega(self):
+        """The total number of prime factors of n
+        """
+        return sum(self.decomposition.itervalues())
+
+    @property
+    def omega(self):
+        """The number of distinct prime factors of n
+        """
+        return len(self.decomposition)
+
+    @property
+    def parity(self):
+        """Return whether integer is even or odd
+        """
+        return 'Odd' if self.num % 2 else 'Even'
+
+    @property
+    def pi(self):
+        """Prime Counting Function, i.e. the amount of primes not exceeding
+        Integer."""
+        # TODO: refactor this as a generator, with a producer and consumer
+        z = self.num
+        return len([x for x in range(1, z+1) if is_prime(x)])
+
+    @property
+    def primality(self):
+        """"Prime" if prime, "Composite" if not
+        """
+        return "Prime" if is_prime(self.num) else "Composite"
+
+    @property
+    def sigma(self):
+        """Returns the aliquot sum of Integer plus the Integer itself, thus the
+        sum of the divisors of the integer
+        """
+        return sum(self.divisors)
+
+    @property
+    def tau(self):
         """Returns the number of divisors of n. The Fundamental Theorem of
         Arithmetic guarantees that every given integer is a unique product of
         powers of primes; i.e. for all z in Z, z = (p_1 ^ a_1 )*...*(p_n ^ a_n)
@@ -242,32 +280,6 @@ class Integer(object):
                           [z + 1 for z in self.decomposition.values()])
 
     @property
-    def Omega(self):
-        """The total number of prime factors of n
-        """
-        return sum(self.decomposition.itervalues())
-
-    @property
-    def omega(self):
-        """The number of distinct prime factors of n
-        """
-        return len(self.decomposition)
-
-    @property
-    def pi(self):
-        """Prime Counting Function, i.e. the amount of primes not exceeding
-        Integer."""
-        # TODO: refactor this as a generator, with a producer and consumer
-        z = self.num
-        return len([x for x in range(1, z+1) if is_prime(x)])
-
-    @property
-    def primality(self):
-        """"Prime" if prime, "Composite" if not
-        """
-        return "Prime" if is_prime(self.num) else "Composite"
-
-    @property
     def totatives(self):
         """The totatives of z are the k in Z, 1<=k<=z, that are coprime to z
         """
@@ -275,35 +287,6 @@ class Integer(object):
         if z == 0:
             return None
         return set([x for x in range(1, z+1) if gcd(z, x) == 1])
-
-
-# def eratosthenes():
-# 	'''Yields the sequence of prime numbers via the Sieve of Eratosthenes.
-#         Courtesy of David Eppstein, UC Irvine, 28 Feb 2002
-#         http://code.activestate.com/recipes/117119/
-#         '''
-# 	D = {}  # map composite integers to primes witnessing their compositeness
-# 	q = 2   # first integer to test for primality
-#     while True:
-#         if q not in D:
-#             yield q        # not marked composite, must be prime
-#             D[q * q] = [q]   # first multiple of q not already marked
-#         else:
-#             for p in D[q]: # move each witness to its next multiple
-#                 D.setdefault(p+q, []).append(p)
-#             del D[q]       # no longer need D[q], free memory
-#         q += 1
-	#Version suggested in the comments
-	# while True:
-	#     p = D.pop(q, None)
-	#     if p:
-	# 	x = p + q
-	# 	while x in D: x += p
-	# 	D[x] = p
-	#     else:
-	# 	D[q*q] = q
-	# 	yield q
-	#     q += 1
 
 
 def nth_most_divisors(n):
