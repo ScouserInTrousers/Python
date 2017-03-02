@@ -122,7 +122,7 @@ class Integer(object):
         """Returns the set of divisors
         """
         # This is a temporary solution to robustly returning the
-        # divisors using a cross-product of possible multiplicands
+        # divisors using a cross-product of the factorization
         return {x for x in xrange(1, self.num+1) if self.num % x == 0}
 
     @property
