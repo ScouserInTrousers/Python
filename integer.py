@@ -4,24 +4,9 @@
 
 def is_prime(z):
     """Takes an integer, z, and returns whether that integer is prime. Thiis
-    particular implementation inspired by
-    http://web.archive.org/web/20170108014244/https://pythonism.wordpress\
-    .com/2008/05/04/looking-at-prime-numbers-in-python/
+    particular implementation from http://stackoverflow.com/a/27946768
     """
-
-    if z == 1 or z % 2 == 0 and z != 2 or z % 3 == 0 and z != 3:
-        return False
-
-    for x in range(1, int((z ** 0.5 + 1) / 6.0 + 1)):
-        if z % (6 * x - 1) == 0 or z % (6 * x + 1) == 0:
-            return False
-
-    return True
-
-# A clever implementation from SO:
-# http://stackoverflow.com/a/27946768
-#  def is_prime(z):
-#  	return n > 1 and all(n % k for k in xrange(2, int(n ** 0.5 + 1))
+    return z > 1 and all(z % n for n in xrange(2, int(z ** 0.5 + 1)))
 
 
 class Integer(object):
@@ -38,6 +23,24 @@ class Integer(object):
         except AttributeError:
             num = self.num + other
 
+        return Integer(num)
+
+    def __sub__(self, other):
+        # Is this a good idea? IDK, give it a shot
+        num = -other + self.num
+        return Integer(num)
+        # return Integer(self.num - other)
+
+    def __mod__(self, other):
+        try:
+            num = self.num % other.num
+        except AttributeError:
+            num = self.num % other
+
+        return Integer(num)
+
+    def __neg__(self, other):
+        num = -self.num
         return Integer(num)
 
     def __mul__(self, other):
@@ -130,6 +133,15 @@ class Integer(object):
         """phi(z) = count of integers <= z coprime to z
         """
         return len(self.totatives)
+
+    @property
+    def factorial(self):
+        if self.num < 0:
+            raise ValueError("Factorial is not defined for negative integers")
+        elif self.num == 0:
+            return Integer(1)
+        return Integer(reduce(lambda x, y: x * y,
+                              [x for x in xrange(1, self.num+1)]))
 
     @property
     def factorization(self):
@@ -273,7 +285,7 @@ class Integer(object):
 
         if self.num == 1:
             return 1
-        if self.num == 0:
+        if self.num <= 0:
             return 0
         else:
             return reduce(lambda x, y: x * y,
@@ -287,6 +299,18 @@ class Integer(object):
         if z == 0:
             return None
         return set([x for x in range(1, z+1) if gcd(z, x) == 1])
+
+    # @staticmethod
+    # def factorial(n):
+    #     """factorial(z) = z! = product of natural numbers less than z
+    #     """
+    #     if n < 0:
+    #         raise ValueError("Factorial is not defined for negative integers")
+    #     try:
+    #         return 1 if n < 1 else n * Integer.factorial(n - 1)
+    #     except RuntimeError:
+    #         return Integer(reduce(lambda x, y: x * y,
+    #                               [x for x in xrange(1, n+1)]))
 
 
 def nth_most_divisors(n):
@@ -304,7 +328,7 @@ def nth_most_divisors(n):
 
     while z >= 1:
         # Get the number of divisors of the current integer
-        dz = len(Integer(z).divisors)
+        dz = Integer(z).tau
         # Main logic of the program
         if dz > max(record):
             record.append(dz)
@@ -323,9 +347,7 @@ def nth_most_divisors(n):
     return z
 
 # TODO:Create a function that makes a call to OEIS and returns the URLs of the
-# sequences in which a given integer appears. Also, want to implement an
-# antiprimes function i.e. the Numberphile post about the nth most
-# composite number
+# sequences in which a given integer appears.
 
 
 def gcd(a, b):
