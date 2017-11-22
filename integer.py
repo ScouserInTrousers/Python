@@ -1,18 +1,53 @@
 #!/usr/bin/python
-# Ixnay on the import statements!
+# Ixnay the import statements!
 
 
 def is_prime(z):
-    """Takes an integer, z, and returns whether that integer is prime. Thiis
+    """Takes an integer and returns whether that integer is prime. This
     particular implementation from http://stackoverflow.com/a/27946768
+    Args:
+        z (int): Integer the primality of which to ascertain
+    Returns:
+        (bool): Whether `z` is prime
     """
     return z > 1 and all(z % n for n in xrange(2, int(z ** 0.5 + 1)))
 
 
 class Integer(object):
+    """
+    A Python object to represent an integer with a superset of the
+    methods of built-in int created in base Python 2 i.e. without
+    any modules imported.
+    Integer behaves as `int` in regards to arithmetic for numeric
+    types e.g.
+
+    >>> Integer('7') + 0 == 7
+    True
+
+    >>> Integer(4) * 3 == 12
+    True
+
+    >>> Integer(0) - 1 == -1
+    True
+
+    >>> Integer(8.4) + 0 == 8
+    True
+
+    Integer boasts of other attributes such as primality,
+    subtypes of primality (e.g. Mersenne), perfectness, power-of
+    checking, factorization, totatives, Goldbach partition, and
+    methods such as nearest_prime and factorial.
+    Most of the attributes of Integer are properties because just
+    as the mathematical concept of an integer has the property
+    that it is either prime or not, Integer has the Boolean
+    property `primality`.
+    """
 
     def __init__(self, num):
-        self.num = num
+        try:
+            self.num = int(num)
+        except (OverflowError, TypeError, ValueError):
+            raise ValueError("Integer must be finite and numeric")
 
     def __repr__(self):
         return 'Integer({!r})'.format(self.num)
@@ -27,9 +62,11 @@ class Integer(object):
 
     def __sub__(self, other):
         # Is this a good idea? IDK, give it a shot
-        num = -other + self.num
+        try:
+            num = self.num - other.num
+        except AttributeError:
+            num = self.num - other
         return Integer(num)
-        # return Integer(self.num - other)
 
     def __mod__(self, other):
         try:
@@ -39,7 +76,17 @@ class Integer(object):
 
         return Integer(num)
 
-    def __neg__(self, other):
+    def __rmod__(self, other):
+        if self.num == 0:
+            raise ZeroDivisionError
+        try:
+            num = other.num % self.num
+        except AttributeError:
+            num = other % self.num
+
+        return Integer(num)
+
+    def __neg__(self):
         num = -self.num
         return Integer(num)
 
@@ -51,8 +98,43 @@ class Integer(object):
 
         return Integer(num)
 
+    def __rmul__(self, other):
+        try:
+            num = other.num * self.num
+        except AttributeError:
+            num = other * self.num
+
+        return Integer(num)
+
+    def __div__(self, other):
+        if other == 0:
+            raise ZeroDivisionError
+        try:
+            num = self.num / other.num
+        except AttributeError:
+            num = self.num / other
+
+        return Integer(num)
+
+    def __rdiv__(self, other):
+        if self.num == 0:
+            raise ZeroDivisionError
+        try:
+            num = other.num / self.num
+        except AttributeError:
+            num = other / self.num
+
+        return Integer(num)
+
     def __pow__(self, p):
-        num = self.num ** p
+        if self.num == 0:
+            if p < 0:
+                raise ZeroDivisionError("Integer(0) cannot be raised to "
+                                        "negative power")
+        try:
+            num = self.num ** p.num
+        except AttributeError:
+            num = self.num ** p
 
         return Integer(num)
 
@@ -78,16 +160,56 @@ class Integer(object):
         else:
             return not eq_result
 
-    def is_perfect_power(self, k):
-        """Returns whether the Integer is a perfect k-power e.g. square (k=2),
-        cube (k=3), etc.
+    @staticmethod
+    def gcd(a, b):
+        """Greatest common divisor of two integers is the integer n that
+        satisfies max({n: a%n=0 & b%n=0, n <= a <= b})
+        Args:
+            a (int): first integer to compare
+            b (int): second integer to compare
+        Returns:
+            (int): the largest integer between (inclusive) `a` and `b`
+                such that it divides `a` and `b`
         """
+        while b:
+            a, b = b, a % b
+        return a
+
+    def is_perfect_power(self, k):
+        """Returns whether the Integer is a perfect k-power e.g. perfect
+        square (k=2), perfect cube (k=3), etc. Is only defined for k > 0
+        E.g. Integer(16).is_perfect_power(2) == True because 4**2 == 16
+
+        Args:
+            k (int): power to check; i.e. is Integer() ** 1/k an integer?
+        Returns:
+            (bool)
+        """
+        if k <= 0:
+            raise ValueError("Perfect negative power is not defined")
+        elif k == 1:
+            return True  # Trivial
+        if self.num == 0:
+            return True
+
         return all(x % k == 0 for x in self.decomposition.itervalues())
 
     def is_power_of(self, n):
         """Is the integer, z, a power of n? I.e. z is a power of n <==>
-        z = n^k for some integers n,k. E.g. 8 is a power of 2 because 8 = 2^3
+        z = n**k for some integers n>0, k. E.g. 8 is a power of 2 because
+        8 = 2**3
+        Args:
+            n (int): integer to ascertain whether Integer() is a power of it
+        Returns:
+            (bool)
         """
+        if self.num == 0:
+            return False
+        if self.num == 1:
+            return True  # Because z**0 == 1 for all z
+        if n == 0:
+            return False
+
         return self.decomposition.keys() == [n]
 
     @property
@@ -124,9 +246,7 @@ class Integer(object):
     def divisors(self):
         """Returns the set of divisors
         """
-        # This is a temporary solution to robustly returning the
-        # divisors using a cross-product of the factorization
-        return {x for x in xrange(1, self.num+1) if self.num % x == 0}
+        return {x for x in xrange(1, self.num + 1) if self.num % x == 0}
 
     @property
     def euler_totient(self):
@@ -151,6 +271,17 @@ class Integer(object):
                            self.decomposition.iteritems()])
 
     @property
+    def goldbach_partition(self):
+        """The expression of a given even number as a sum of two primes
+        is its Goldbach partition"""
+        if self.parity == 'Odd':
+            return None
+        partitions = []
+        for p in xrange(2, self.num + 1):
+            if all(is_prime(p), is_prime(self.num-p)):
+                partitions.append((p, self.num-p))
+
+    @property
     def is_mersenne(self):
         """A Mersenne number is an integer, M, such that M = 2^k - 1, for some
         integer k
@@ -166,6 +297,10 @@ class Integer(object):
 
     @property
     def is_perfect(self):
+        """A positive integer is perfect if it is equal to the sum of its
+        positive divisors excluding itself; for instance 6 has divisors
+        {1, 2, 3, 6} and 1 + 2 + 3 = 6.
+        """
         return self.sigma == 2 * self.num
 
     @property
@@ -193,16 +328,10 @@ class Integer(object):
         """This function finds the nearest prime number to integer input z"""
 
         z = self.num
-        if z in (0, 1):
+        if z <= 1:
             return 2
         if is_prime(z):
             return z
-
-        # It is probably in violation of D.R.Y. to have these two generators
-        # be so similar yet separate. Refactoring seems that it would add
-        # complexity just for style points, however
-        # TODO: generate tuple of steps away in both directions; subtract/add
-        # and take the min of that to get nearest prime
 
         # Generator to get the first prime before z
         def before(z):
@@ -256,9 +385,8 @@ class Integer(object):
     def pi(self):
         """Prime Counting Function, i.e. the amount of primes not exceeding
         Integer."""
-        # TODO: refactor this as a generator, with a producer and consumer
         z = self.num
-        return len([x for x in range(1, z+1) if is_prime(x)])
+        return len([x for x in xrange(1, z+1) if is_prime(x)])
 
     @property
     def primality(self):
@@ -298,19 +426,7 @@ class Integer(object):
         z = self.num
         if z == 0:
             return None
-        return set([x for x in range(1, z+1) if gcd(z, x) == 1])
-
-    # @staticmethod
-    # def factorial(n):
-    #     """factorial(z) = z! = product of natural numbers less than z
-    #     """
-    #     if n < 0:
-    #         raise ValueError("Factorial is not defined for negative integers")
-    #     try:
-    #         return 1 if n < 1 else n * Integer.factorial(n - 1)
-    #     except RuntimeError:
-    #         return Integer(reduce(lambda x, y: x * y,
-    #                               [x for x in xrange(1, n+1)]))
+        return set([x for x in xrange(1, z+1) if self.gcd(z, x) == 1])
 
 
 def nth_most_divisors(n):
@@ -319,6 +435,10 @@ def nth_most_divisors(n):
     number has more factors; 2 is the second HCN because it has the most
     factors of all natural numbers less than or equal to 2. More info at
     https://oeis.org/A002182
+    Args:
+        n (int): The element in Highly Composite Numbers sequence to return
+    Returns:
+        (int): the integer in position `n` in the Highly Composite Numbers seq
     """
 
     if(n == 1):
@@ -346,18 +466,6 @@ def nth_most_divisors(n):
 
     return z
 
-# TODO:Create a function that makes a call to OEIS and returns the URLs of the
-# sequences in which a given integer appears.
-
-
-def gcd(a, b):
-    """Greatest common divisor of two integers is the integer n that
-    satisfies max({n: a%n=0 & b%n=0, n <= a <= b})
-    """
-    # Note: could also frame this as set intersection of divisors of a,b
-    while b:
-        a, b = b, a % b
-    return a
 
 # TESTS:
 # two = Integer(2)
