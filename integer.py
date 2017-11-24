@@ -190,24 +190,35 @@ class Integer(object):
         elif k == 1:
             return True  # Trivial
         if self.num == 0:
-            return True
+            return True  # zero to any k is zero
 
         return all(x % k == 0 for x in self.decomposition.itervalues())
 
     def is_power_of(self, n):
-        """Is the integer, z, a power of n? I.e. z is a power of n <==>
-        z = n**k for some integers n>0, k. E.g. 8 is a power of 2 because
-        8 = 2**3
+        """Is the integer, z, a power of n? I.e. z is a power of n if and
+        only if z = n**k for some integers n>0, k. For example, 8 is a
+        power of 2 because 8 = 2**3. Only implemented for positive integers
         Args:
-            n (int): integer to ascertain whether Integer() is a power of it
+            n (int): positive integer to ascertain whether Integer() is a
+                power of it
         Returns:
             (bool)
         """
-        if self.num == 0:
+        if self.num < 0:
+            raise NotImplementedError
+        elif self.num == 0:
+            return False  # No exponentiation can result in 0
+        elif self.num == 1:
+            return True  # 1 is a zero-power of any given n
+        if n < 0:
+            raise ValueError
+        elif n == 0:
+            # Already know that z != 0 because logic has gotten to this point
+            # There is no other such integer that is a zero-power of anything
             return False
-        if self.num == 1:
-            return True  # Because z**0 == 1 for all z
-        if n == 0:
+        elif n == 1:
+            # Already know that z != 1 because logic has gotten to this point
+            # There is no other integer such that is a power of 1
             return False
 
         return self.decomposition.keys() == [n]
@@ -222,11 +233,12 @@ class Integer(object):
     def decomposition(self):
         """Returns the dictionary of prime factors of the given integer, in the
         form of "prime: power". Credit for the implementation must go to the
-        author: http://stackoverflow.com/a/412942/4747798"""
+        author: http://stackoverflow.com/a/412942/4747798
+        """
 
         z = self.num
-        if z == 0:
-            return None
+        if z in (0, 1):
+            return {}
 
         factors = []
         d = 2
@@ -244,13 +256,14 @@ class Integer(object):
 
     @property
     def divisors(self):
-        """Returns the set of divisors
+        """Returns the set of divisors of Integer()
         """
-        return {x for x in xrange(1, self.num + 1) if self.num % x == 0}
+        return {x for x in xrange(1, self.num / 2 + 1) if self.num % x == 0}
 
     @property
     def euler_totient(self):
-        """phi(z) = count of integers <= z coprime to z
+        """Returns phi(z) = count of positive integers less than or equal to
+        z that are coprime to z
         """
         return len(self.totatives)
 
@@ -260,26 +273,29 @@ class Integer(object):
             raise ValueError("Factorial is not defined for negative integers")
         elif self.num == 0:
             return Integer(1)
-        return Integer(reduce(lambda x, y: x * y,
-                              [x for x in xrange(1, self.num+1)]))
+        else:
+            return Integer(reduce(lambda x, y: x * y,
+                                  (x for x in xrange(1, self.num+1))))
 
     @property
     def factorization(self):
         """Quasi human-readable rendering of prime decomposition
         """
-        return ' * '.join([str(k) + '^' + str(v) for k, v in
-                           self.decomposition.iteritems()])
+        return ' * '.join((str(k) + '^' + str(v) for k, v in
+                           self.decomposition.iteritems()))
 
     @property
-    def goldbach_partition(self):
-        """The expression of a given even number as a sum of two primes
-        is its Goldbach partition"""
+    def goldbach_partitions(self):
+        """Returns the Goldbach partitions of Integer(); i.e. the
+        expression of an even number as a sum of two primes
+        """
         if self.parity == 'Odd':
-            return None
+            return set()
         partitions = []
         for p in xrange(2, self.num + 1):
-            if all(is_prime(p), is_prime(self.num-p)):
+            if all(is_prime(p), is_prime(self.num - p)):
                 partitions.append((p, self.num-p))
+        return set(partitions)
 
     @property
     def is_mersenne(self):
@@ -325,13 +341,17 @@ class Integer(object):
 
     @property
     def nearest_prime(self):
-        """This function finds the nearest prime number to integer input z"""
+        """If Integer() is prime, returns Integer().num. Otherwise, returns
+        either the nearest prime, or the two nearest primes, if equidistant
+        Returns:
+            (tuple)
+        """
 
         z = self.num
         if z <= 1:
-            return 2
+            return (2,)
         if is_prime(z):
-            return z
+            return (z,)
 
         # Generator to get the first prime before z
         def before(z):
@@ -357,21 +377,21 @@ class Integer(object):
         first_after_z = after(z).next()
 
         if abs(first_before_z - z) < abs(first_after_z - z):
-            return first_before_z
+            return (first_before_z,)
         if abs(first_before_z - z) > abs(first_after_z - z):
-            return first_after_z
+            return (first_after_z,)
         else:
             return (first_before_z, first_after_z)
 
     @property
     def Omega(self):
-        """The total number of prime factors of n
+        """The total number of prime factors of Integer()
         """
         return sum(self.decomposition.itervalues())
 
     @property
     def omega(self):
-        """The number of distinct prime factors of n
+        """The number of distinct prime factors of Integer()
         """
         return len(self.decomposition)
 
@@ -384,40 +404,42 @@ class Integer(object):
     @property
     def pi(self):
         """Prime Counting Function, i.e. the amount of primes not exceeding
-        Integer."""
+        Integer
+        """
         z = self.num
-        return len([x for x in xrange(1, z+1) if is_prime(x)])
+        # return len([x for x in xrange(1, z+1) if is_prime(x)])
+        return sum(1 for x in xrange(1, z + 1) if is_prime(x))
 
     @property
     def primality(self):
-        """"Prime" if prime, "Composite" if not
+        """Returns "Prime" if prime, "Composite" if not
         """
-        return "Prime" if is_prime(self.num) else "Composite"
+        return "Prime" if self.primality else "Composite"
 
     @property
     def sigma(self):
-        """Returns the aliquot sum of Integer plus the Integer itself, thus the
-        sum of the divisors of the integer
+        """Returns the aliquot sum of Integer plus the Integer itself;
+        i.e. the sum of the divisors of the integer
         """
         return sum(self.divisors)
 
     @property
     def tau(self):
-        """Returns the number of divisors of n. The Fundamental Theorem of
+        """Returns the number of divisors of Integer. The Fundamental Theorem of
         Arithmetic guarantees that every given integer is a unique product of
         powers of primes; i.e. for all z in Z, z = (p_1 ^ a_1 )*...*(p_n ^ a_n)
         for primes p_1, ..., p_n and integer powers a_1, ..., a_n. Moreover,
-        there is a theorem that states that the number of factors of a given
-        integer is equal to d(Z) = (a_1 + 1)*...*(a_n + 1). This function is an
-        implementation of the theorem. More info at https://oeis.org/A000005"""
+        the number of factors of a given integer is equal to
+        d(Z) = (a_1 + 1)*...*(a_n + 1). This function is an implementation of
+        the theorem. More info at https://oeis.org/A000005"""
 
         if self.num == 1:
             return 1
-        if self.num <= 0:
+        elif self.num <= 0:
             return 0
         else:
             return reduce(lambda x, y: x * y,
-                          [z + 1 for z in self.decomposition.values()])
+                          (z + 1 for z in self.decomposition.values()))
 
     @property
     def totatives(self):
@@ -425,8 +447,8 @@ class Integer(object):
         """
         z = self.num
         if z == 0:
-            return None
-        return set([x for x in xrange(1, z+1) if self.gcd(z, x) == 1])
+            return set()
+        return set(x for x in xrange(1, z+1) if self.gcd(z, x) == 1)
 
 
 def nth_most_divisors(n):
@@ -441,7 +463,7 @@ def nth_most_divisors(n):
         (int): the integer in position `n` in the Highly Composite Numbers seq
     """
 
-    if(n == 1):
+    if n == 1:
         return 1
     record = [1]
     z = 2
@@ -465,12 +487,3 @@ def nth_most_divisors(n):
             continue
 
     return z
-
-
-# TESTS:
-# two = Integer(2)
-# three = Integer(3)
-# Integer.gcd(2,3) == max(two.divisors & three.divisors)
-
-# twelve = Integer(12)
-# twelve.num == [k**v for k,v in twelve.decomposition.iteritems()][0]
