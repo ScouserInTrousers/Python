@@ -21,7 +21,7 @@ class Integer(object):
     Integer behaves as `int` in regards to arithmetic for numeric
     types e.g.
 
-    >>> Integer('7') + 0 == 7
+    >>> Integer("7") + 0 == 7
     True
 
     >>> Integer(4) * 3 == 12
@@ -50,7 +50,7 @@ class Integer(object):
             raise ValueError("Integer must be finite and numeric")
 
     def __repr__(self):
-        return 'Integer({!r})'.format(self.num)
+        return "Integer({!r})".format(self.num)
 
     def __add__(self, other):
         try:
@@ -281,7 +281,7 @@ class Integer(object):
     def factorization(self):
         """Quasi human-readable rendering of prime decomposition
         """
-        return ' * '.join((str(k) + '^' + str(v) for k, v in
+        return " * ".join((str(k) + "^" + str(v) for k, v in
                            self.decomposition.iteritems()))
 
     @property
@@ -289,12 +289,13 @@ class Integer(object):
         """Returns the Goldbach partitions of Integer(); i.e. the
         expression of an even number as a sum of two primes
         """
-        if self.parity == 'Odd':
-            return set()
-        partitions = []
-        for p in xrange(2, self.num + 1):
-            if all(is_prime(p), is_prime(self.num - p)):
-                partitions.append((p, self.num-p))
+
+        partitions = set()
+        if self.parity == "Odd":
+            return partitions
+        for p in xrange(2, self.num / 2 + 1):
+            if all((is_prime(p), is_prime(self.num - p))):
+                partitions.add((p, self.num-p))
         return set(partitions)
 
     @property
@@ -302,13 +303,18 @@ class Integer(object):
         """A Mersenne number is an integer, M, such that M = 2^k - 1, for some
         integer k
         """
-        return Integer(self.num + 1).is_power_of(2)
+        if self.num < 0:
+            return False
+        else:
+            return Integer(self.num + 1).is_power_of(2)
 
     @property
     def is_mersenne_prime(self):
         """A Mersenne prime is a prime, p, of the form p = 2^k - 1, where
         k is an integer
         """
+        if self.num < 0:
+            return False
         return is_prime(self.num) and self.is_mersenne
 
     @property
@@ -321,21 +327,23 @@ class Integer(object):
 
     @property
     def is_woodall(self):
-        """A Woodall number is an integer, W, of the form W = k*2^k - 1, where
+        """A Woodall number is an integer, W, of the form W = k*2**k - 1, where
         k is an integer
         """
         if self.num < 1:
             return False
         w = Integer(self.num + 1)
-        try:
-            return w.decomposition[2] * pow(2, w.decomposition[2]) == w
-        except KeyError:
+        range_to_check = xrange(0, int(w.num ** 1./3) + 1)
+        for candidate in range_to_check:
+            if candidate * 2 ** candidate == w.num:
+                return True
+        else:
             return False
 
     @property
     def is_woodall_prime(self):
-        """A Woodall prime is a prime, p, of the form p = n*2^n - 1, where
-        n is an integer
+        """A Woodall prime is a prime, p, of the form p = k*2**k - 1, where
+        k is an integer
         """
         return is_prime(self.num) and self.is_woodall
 
@@ -399,7 +407,7 @@ class Integer(object):
     def parity(self):
         """Return whether integer is even or odd
         """
-        return 'Odd' if self.num % 2 else 'Even'
+        return "Odd" if self.num % 2 else "Even"
 
     @property
     def pi(self):
@@ -407,14 +415,13 @@ class Integer(object):
         Integer
         """
         z = self.num
-        # return len([x for x in xrange(1, z+1) if is_prime(x)])
-        return sum(1 for x in xrange(1, z + 1) if is_prime(x))
+        return sum(1 for x in xrange(2, z + 1) if is_prime(x))
 
     @property
     def primality(self):
         """Returns "Prime" if prime, "Composite" if not
         """
-        return "Prime" if self.primality else "Composite"
+        return "Prime" if is_prime(self.num) else "Composite"
 
     @property
     def sigma(self):
@@ -433,10 +440,10 @@ class Integer(object):
         d(Z) = (a_1 + 1)*...*(a_n + 1). This function is an implementation of
         the theorem. More info at https://oeis.org/A000005"""
 
-        if self.num == 1:
-            return 1
-        elif self.num <= 0:
+        if self.num <= 0:
             return 0
+        elif self.num == 1:
+            return 1
         else:
             return reduce(lambda x, y: x * y,
                           (z + 1 for z in self.decomposition.values()))
@@ -446,9 +453,9 @@ class Integer(object):
         """The totatives of z are the k in Z, 1<=k<=z, that are coprime to z
         """
         z = self.num
-        if z == 0:
+        if z <= 0:
             return set()
-        return set(x for x in xrange(1, z+1) if self.gcd(z, x) == 1)
+        return {x for x in xrange(1, z+1) if self.gcd(z, x) == 1}
 
 
 def nth_most_divisors(n):

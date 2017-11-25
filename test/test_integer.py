@@ -2,6 +2,7 @@ from decimal import Decimal
 import fractions
 from hypothesis import given, strategies as st
 from integer import is_prime, Integer
+import itertools as it
 import math
 import operator
 import pytest as pt
@@ -177,7 +178,7 @@ def test_is_perfect_power(z, k):
             assert not Integer(z).is_perfect_power(k)
 
 
-@given(st.integers(max_value=1e5), st.integers())
+@given(st.integers(max_value=1e4), st.integers())
 def test_is_power_of(z, n):
     if z < 0:
         with pt.raises(NotImplementedError):
@@ -222,7 +223,7 @@ def test_decomposition(z):
                                     Integer(z).decomposition.iteritems())))
 
 
-@given(st.integers(max_value=1e5))
+@given(st.integers(max_value=1e4))
 def test_divisors(z):
     # Using itertools, take Integer.decomposition and get every
     # combination of key ** value for every key and every 0, ..., value
@@ -257,9 +258,146 @@ def test_factorial(z):
         assert Integer(z).factorial == math.factorial(z)
 
 
-@given(st.integers(max_value=1e5))
+@given(st.integers(max_value=1e4))
 def test_factorization(z):
     assert Integer(z).factorization == \
         ' * '.join((''.join((str(k), '^', str(v)))
                     for k, v in Integer(z).decomposition.iteritems()
                     ))
+
+
+@given(st.integers(max_value=1e3))
+def test_goldbach_partitions(z):
+    expected = set()
+    if z % 2:
+        assert Integer(z).goldbach_partitions == expected
+    else:
+        expected = set(it.ifilter(lambda x: is_prime(x[0]) and is_prime(x[1]),
+                                  it.izip(xrange(z/2+1),
+                                          (z - x for x in xrange(z/2+1)))))
+        assert Integer(z).goldbach_partitions == expected
+
+
+@given(st.integers(max_value=1e4))
+def test_is_mersenne(z):
+    if z <= 0:
+        assert not Integer(z).is_mersenne
+    else:
+        if math.log(z+1, 2).is_integer():
+            assert Integer(z).is_mersenne
+        else:
+            assert not Integer(z).is_mersenne
+
+
+@given(st.integers(max_value=1e4))
+def test_is_mersenne_prime(z):
+    if z <= 0:
+        assert not Integer(z).is_mersenne_prime
+    else:
+        if math.log(z+1, 2).is_integer() and is_prime(z):
+            assert Integer(z).is_mersenne_prime
+        else:
+            assert not Integer(z).is_mersenne_prime
+
+
+@given(st.integers(max_value=1e4))
+def test_is_perfect(z):
+    Z = Integer(z)
+    if sum(Z.divisors) == Z.num:
+        assert Z.is_perfect
+    else:
+        assert not Z.is_perfect
+
+
+@given(st.integers(max_value=1e4))
+def test_is_woodall(z):
+    # THIS IS A COPOUT SO THAT THE TEST WILL RUN QUICKLY
+    if z not in {1, 7, 23, 63, 159, 383, 895, 2047, 4607, 10239, 22527, 49151}:
+        assert not Integer(z).is_woodall
+    else:
+        assert Integer(z).is_woodall
+
+
+@given(st.integers(max_value=1e4))
+def test_is_woodall_prime(z):
+    # THIS IS A COPOUT SO THAT THE TEST WILL RUN QUICKLY
+    if z not in {7, 23, 383}:
+        assert not Integer(z).is_woodall_prime
+    else:
+        assert Integer(z).is_woodall_prime
+
+
+@given(st.integers(max_value=1e4))
+def test_nearest_prime(z):
+    if z <= 1:
+        assert Integer(z).nearest_prime == (2,)
+    elif z == 9:
+        assert Integer(z).nearest_prime == (7, 11)
+    elif is_prime(z):
+        assert Integer(z).nearest_prime == (z,)
+    else:
+        # THIS IS A COPOUT SO THAT THE TEST WILL RUN QUICKLY
+        pass
+
+
+@given(st.integers(max_value=1e4))
+def test_Omega(z):
+    assert Integer(z).Omega == sum(Integer(z).decomposition.itervalues())
+
+
+@given(st.integers(max_value=1e4))
+def test_omega(z):
+    Z = Integer(z)
+    assert Z.omega == sum(1 for _ in
+                          it.ifilter(lambda x: is_prime(x) and not z % x,
+                                     xrange(0, z+1)))
+
+
+@given(st.integers(max_value=1e4))
+def test_parity(z):
+    if z % 2:
+        assert Integer(z).parity == 'Odd'
+    else:
+        assert Integer(z).parity == 'Even'
+
+
+@given(st.integers(max_value=1e4))
+def test_pi(z):
+    assert Integer(z).pi == sum(1 for x in xrange(2, z + 1) if is_prime(x))
+
+
+@given(st.integers(max_value=1e4))
+def test_primality(z):
+    if is_prime(z):
+        assert Integer(z).primality == "Prime"
+    else:
+        assert Integer(z).primality == "Composite"
+
+
+@given(st.integers(max_value=1e4))
+def test_sigma(z):
+    Z = Integer(z)
+    assert Z.sigma == sum(it.ifilterfalse(lambda x: z % x,
+                                          xrange(1, z / 2 + 1)))
+
+
+@given(st.integers(max_value=1e4))
+def test_tau(z):
+    if z <= 0:
+        assert Integer(z).tau == 0
+    elif z == 1:
+        assert Integer(z).tau == 1
+    else:
+        Z = Integer(z)
+        assert Z.tau == reduce(operator.mul,
+                               (z + 1 for z in Z.decomposition.itervalues()))
+
+
+@given(st.integers(max_value=1e4))
+def test_totatives(z):
+    assert isinstance(Integer(z).totatives, set)
+    if z <= 0:
+        assert not Integer(z).totatives
+    else:
+        assert Integer(z).totatives == {x for x in xrange(1, z + 1)
+                                        if Integer.gcd(z, x) == 1}
