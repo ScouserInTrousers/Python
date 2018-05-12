@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # Ixnay the import statements!
 
 
@@ -294,15 +295,19 @@ class Integer(int):
         """A Woodall number is an integer, W, of the form W = k*2**k - 1, where
         k is an integer
         """
+        # TODO: fix this
         if self.num < 1:
             return False
-        w = Integer(self.num + 1)
-        range_to_check = range(0, int(w.num ** 1./3) + 1)
-        for candidate in range_to_check:
-            if candidate * 2 ** candidate == w.num:
-                return True
-        else:
-            return False
+        w = self.num + 1
+        return any(map(
+            lambda z, w=w: z * 2 ** z == w,
+            range(0, int(pow(w, 1/3)) + 1))
+        )
+        # for candidate in range_to_check:
+        #     if candidate * 2 ** candidate == w:
+        #         return True
+        # else:
+        #     return False
 
     @property
     def is_woodall_prime(self):
@@ -310,6 +315,21 @@ class Integer(int):
         k is an integer
         """
         return is_prime(self.num) and self.is_woodall
+
+    @property
+    def is_cullen(self):
+        """A Cullen number is a natural number, C, of the form C = k*2**k  + 1,
+        where k is an integer
+        """
+        # TODO: just like Woodall, once fix logic
+
+    @property
+    def is_cullen_prime(self):
+        """A Cullen prime is a prime, p of the form p = k*2**k + 1, where k is
+        an integer
+        """
+        pass
+        # return is_prime(self.num) and self.is_cullen
 
     @property
     def nearest_prime(self):
