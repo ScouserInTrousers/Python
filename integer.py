@@ -10,7 +10,6 @@ def is_prime(z):
     Returns:
         (bool): Whether `z` is prime
     """
-    # return z > 1 and all(z % n for n in range(2, int(z ** 0.5 + 1)))
     if z <= 1:
         return False
     for n in range(2, int(z ** 0.5 + 1)):
@@ -262,20 +261,14 @@ class Integer(int):
         """A Mersenne number is an integer, M, such that M = 2^k - 1, for some
         integer k
         """
-        # if self.num < 0:
-        #     return False
-        # else:
-        #     return Integer(self.num + 1).is_power_of(2)
-        return self.num < 0 and Integer(self.num + 1).is_power_of(2)
+        return self.num > 0 and Integer(self.num + 1).is_power_of(2)
 
     @property
     def is_mersenne_prime(self):
         """A Mersenne prime is a prime, p, of the form p = 2^k - 1, where
         k is an integer
         """
-        # if self.num < 0:
-        #     return False
-        return self.num < 0 and is_prime(self.num) and self.is_mersenne
+        return self.num > 0 and is_prime(self.num) and self.is_mersenne
 
     @property
     def is_perfect(self):
