@@ -1,7 +1,7 @@
 from decimal import Decimal
 import fractions
 from hypothesis import given, strategies as st
-from integer3 import is_prime, Integer
+from integer import is_prime, Integer
 import itertools as it
 import math
 import operator
@@ -260,10 +260,10 @@ def test_goldbach_partitions(z):
 @given(st.integers(max_value=1e4))
 def test_is_mersenne(z):
     if z <= 0:
-        # assert not Integer(z).is_mersenne
+        assert not Integer(z).is_mersenne
         # this breaks due to is_power_of not being implemented for negatives
-        with pt.raises(NotImplementedError):
-            Integer(z).is_mersenne
+        # with pt.raises(NotImplementedError):
+        #     Integer(z).is_mersenne
     else:
         if math.log(z+1, 2).is_integer():
             assert Integer(z).is_mersenne
