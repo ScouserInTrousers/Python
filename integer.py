@@ -10,13 +10,20 @@ def is_prime(z):
     Returns:
         (bool): Whether `z` is prime
     """
-    return z > 1 and all(z % n for n in xrange(2, int(z ** 0.5 + 1)))
+    # return z > 1 and all(z % n for n in range(2, int(z ** 0.5 + 1)))
+    if z <= 1:
+        return False
+    for n in range(2, int(z ** 0.5 + 1)):
+        if not z % n:
+            return False
+    else:
+        return True
 
 
-class Integer(object):
+class Integer(int):
     """
     A Python object to represent an integer with a superset of the
-    methods of built-in int created in base Python 2 i.e. without
+    methods of built-in int created in base Python 3 i.e. without
     any modules imported.
     Integer behaves as `int` in regards to arithmetic for numeric
     types e.g.
@@ -52,113 +59,56 @@ class Integer(object):
     def __repr__(self):
         return "Integer({!r})".format(self.num)
 
-    def __add__(self, other):
-        try:
-            num = self.num + other.num
-        except AttributeError:
-            num = self.num + other
+    def __bool__(self):
+        return self.num.__bool__()
 
-        return Integer(num)
+    def __add__(self, other):
+        num = self.num + other
+        return Integer(num) if isinstance(num, int) else num
 
     def __sub__(self, other):
-        # Is this a good idea? IDK, give it a shot
-        try:
-            num = self.num - other.num
-        except AttributeError:
-            num = self.num - other
-        return Integer(num)
+        num = self.num - other
+        return Integer(num) if isinstance(num, int) else num
 
     def __mod__(self, other):
-        try:
-            num = self.num % other.num
-        except AttributeError:
-            num = self.num % other
-
-        return Integer(num)
+        num = self.num % other
+        return Integer(num) if isinstance(num, int) else num
 
     def __rmod__(self, other):
-        if self.num == 0:
-            raise ZeroDivisionError
-        try:
-            num = other.num % self.num
-        except AttributeError:
-            num = other % self.num
-
-        return Integer(num)
+        num = other % self.num
+        return Integer(num) if isinstance(num, int) else num
 
     def __neg__(self):
         num = -self.num
         return Integer(num)
 
     def __mul__(self, other):
-        try:
-            num = self.num * other.num
-        except AttributeError:
-            num = self.num * other
-
-        return Integer(num)
+        num = self.num * other
+        return Integer(num) if isinstance(num, int) else num
 
     def __rmul__(self, other):
-        try:
-            num = other.num * self.num
-        except AttributeError:
-            num = other * self.num
+        num = other * self.num
+        return Integer(num) if isinstance(num, int) else num
 
-        return Integer(num)
+    def __truediv__(self, other):
+        num = self.num / other
+        return num
 
-    def __div__(self, other):
-        if other == 0:
-            raise ZeroDivisionError
-        try:
-            num = self.num / other.num
-        except AttributeError:
-            num = self.num / other
+    def __rtruediv__(self, other):
+        num = other / self.num
+        return num
 
-        return Integer(num)
+    def __floordiv__(self, other):
+        num = self.num / other
+        return num
 
-    def __rdiv__(self, other):
-        if self.num == 0:
-            raise ZeroDivisionError
-        try:
-            num = other.num / self.num
-        except AttributeError:
-            num = other / self.num
-
-        return Integer(num)
+    def __rfloordiv__(self, other):
+        num = other / self.num
+        return num
 
     def __pow__(self, p):
-        if self.num == 0:
-            if p < 0:
-                raise ZeroDivisionError("Integer(0) cannot be raised to "
-                                        "negative power")
-        try:
-            num = self.num ** p.num
-        except AttributeError:
-            num = self.num ** p
-
-        return Integer(num)
-
-    def __lt__(self, other):
-        return self.num < other
-
-    def __le__(self, other):
-        return self.num <= other
-
-    def __gt__(self, other):
-        return self.num > other
-
-    def __ge__(self, other):
-        return self.num >= other
-
-    def __eq__(self, other):
-        return self.num == other
-
-    def __ne__(self, other):
-        eq_result = self == other
-        if eq_result is NotImplemented:
-            return NotImplemented
-        else:
-            return not eq_result
+        num = self.num ** p
+        return Integer(num) if isinstance(num, int) else num
 
     @staticmethod
     def gcd(a, b):
@@ -192,7 +142,7 @@ class Integer(object):
         if self.num == 0:
             return True  # zero to any k is zero
 
-        return all(x % k == 0 for x in self.decomposition.itervalues())
+        return all(x % k == 0 for x in self.decomposition.values())
 
     def is_power_of(self, n):
         """Is the integer, z, a power of n? I.e. z is a power of n if and
@@ -206,10 +156,18 @@ class Integer(object):
         """
         if self.num < 0:
             raise NotImplementedError
+            # m = n
+            # while abs(n) < abs(self.num):
+            #     n *= m
+            #     if n == self.num:
+            #         return True
+            # else:
+            #     return False
         elif self.num == 0:
             return False  # No exponentiation can result in 0
         elif self.num == 1:
-            return True  # 1 is a zero-power of any given n
+            return True  # 1 is the zero-power of any given n
+
         if n < 0:
             raise ValueError
         elif n == 0:
@@ -221,7 +179,7 @@ class Integer(object):
             # There is no other integer such that is a power of 1
             return False
 
-        return self.decomposition.keys() == [n]
+        return list(self.decomposition.keys()) == [n]
 
     @property
     def binary(self):
@@ -252,20 +210,20 @@ class Integer(object):
                     factors.append(z)
                 break
 
-        return {f: factors.count(f) for f in set(factors)}
+        return {int(f): int(factors.count(f)) for f in set(factors)}
 
     @property
     def divisors(self):
         """Returns the set of divisors of Integer()
         """
-        return {x for x in xrange(1, self.num / 2 + 1) if self.num % x == 0}
+        return {x for x in range(1, self.num // 2 + 1) if self.num % x == 0}
 
     @property
     def euler_totient(self):
         """Returns phi(z) = count of positive integers less than or equal to
         z that are coprime to z
         """
-        return len(self.totatives)
+        return Integer(len(self.totatives))
 
     @property
     def factorial(self):
@@ -274,15 +232,16 @@ class Integer(object):
         elif self.num == 0:
             return Integer(1)
         else:
-            return Integer(reduce(lambda x, y: x * y,
-                                  (x for x in xrange(1, self.num+1))))
+            def factorial_(n):
+                return 1 if n < 1 else n * factorial_(n-1)
+            return Integer(factorial_(self.num))
 
     @property
     def factorization(self):
         """Quasi human-readable rendering of prime decomposition
         """
         return " * ".join((str(k) + "^" + str(v) for k, v in
-                           self.decomposition.iteritems()))
+                           self.decomposition.items()))
 
     @property
     def goldbach_partitions(self):
@@ -293,7 +252,7 @@ class Integer(object):
         partitions = set()
         if self.parity == "Odd":
             return partitions
-        for p in xrange(2, self.num / 2 + 1):
+        for p in range(2, self.num // 2 + 1):
             if all((is_prime(p), is_prime(self.num - p))):
                 partitions.add((p, self.num-p))
         return set(partitions)
@@ -303,19 +262,20 @@ class Integer(object):
         """A Mersenne number is an integer, M, such that M = 2^k - 1, for some
         integer k
         """
-        if self.num < 0:
-            return False
-        else:
-            return Integer(self.num + 1).is_power_of(2)
+        # if self.num < 0:
+        #     return False
+        # else:
+        #     return Integer(self.num + 1).is_power_of(2)
+        return self.num < 0 and Integer(self.num + 1).is_power_of(2)
 
     @property
     def is_mersenne_prime(self):
         """A Mersenne prime is a prime, p, of the form p = 2^k - 1, where
         k is an integer
         """
-        if self.num < 0:
-            return False
-        return is_prime(self.num) and self.is_mersenne
+        # if self.num < 0:
+        #     return False
+        return self.num < 0 and is_prime(self.num) and self.is_mersenne
 
     @property
     def is_perfect(self):
@@ -326,6 +286,17 @@ class Integer(object):
         return self.sigma == 2 * self.num
 
     @property
+    def is_squarefree(self):
+        """A positive integer is squarefree if it is not divisible by
+        a square greater than 1.
+        """
+        if self.num < 1:
+            return False
+        elif self.num == 1:
+            return True
+        return all(exponent < 2 for exponent in self.decomposition.values())
+
+    @property
     def is_woodall(self):
         """A Woodall number is an integer, W, of the form W = k*2**k - 1, where
         k is an integer
@@ -333,7 +304,7 @@ class Integer(object):
         if self.num < 1:
             return False
         w = Integer(self.num + 1)
-        range_to_check = xrange(0, int(w.num ** 1./3) + 1)
+        range_to_check = range(0, int(w.num ** 1./3) + 1)
         for candidate in range_to_check:
             if candidate * 2 ** candidate == w.num:
                 return True
@@ -381,12 +352,12 @@ class Integer(object):
                     i += 1
                     continue
 
-        first_before_z = before(z).next()
-        first_after_z = after(z).next()
+        first_before_z = next(before(z))
+        first_after_z = next(after(z))
 
         if abs(first_before_z - z) < abs(first_after_z - z):
             return (first_before_z,)
-        if abs(first_before_z - z) > abs(first_after_z - z):
+        elif abs(first_before_z - z) > abs(first_after_z - z):
             return (first_after_z,)
         else:
             return (first_before_z, first_after_z)
@@ -395,7 +366,7 @@ class Integer(object):
     def Omega(self):
         """The total number of prime factors of Integer()
         """
-        return sum(self.decomposition.itervalues())
+        return sum(self.decomposition.values())
 
     @property
     def omega(self):
@@ -415,7 +386,7 @@ class Integer(object):
         Integer
         """
         z = self.num
-        return sum(1 for x in xrange(2, z + 1) if is_prime(x))
+        return Integer(sum(1 for x in range(2, z + 1) if is_prime(x)))
 
     @property
     def primality(self):
@@ -424,11 +395,24 @@ class Integer(object):
         return "Prime" if is_prime(self.num) else "Composite"
 
     @property
+    def radical(self):
+        """Returns the product of the distinct primes dividing n
+        """
+        z = self.num
+        if self.is_squarefree:
+            return Integer(z)
+        else:
+            product = 1
+            for prime_factor in self.decomposition.keys():
+                product *= prime_factor
+            return Integer(product)
+
+    @property
     def sigma(self):
         """Returns the aliquot sum of Integer plus the Integer itself;
         i.e. the sum of the divisors of the integer
         """
-        return sum(self.divisors)
+        return Integer(sum(self.divisors))
 
     @property
     def tau(self):
@@ -441,12 +425,14 @@ class Integer(object):
         the theorem. More info at https://oeis.org/A000005"""
 
         if self.num <= 0:
-            return 0
+            return Integer(0)
         elif self.num == 1:
-            return 1
+            return Integer(1)
         else:
-            return reduce(lambda x, y: x * y,
-                          (z + 1 for z in self.decomposition.values()))
+            product = 1
+            for z in self.decomposition.values():
+                product *= (z+1)
+            return Integer(product)
 
     @property
     def totatives(self):
@@ -455,7 +441,7 @@ class Integer(object):
         z = self.num
         if z <= 0:
             return set()
-        return {x for x in xrange(1, z+1) if self.gcd(z, x) == 1}
+        return {x for x in range(1, z+1) if self.gcd(z, x) == 1}
 
 
 def nth_most_divisors(n):
