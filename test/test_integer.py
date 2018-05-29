@@ -309,20 +309,34 @@ def test_is_squarefree(z):
 
 @given(st.integers(max_value=1e4))
 def test_is_woodall(z):
-    # THIS IS A COPOUT SO THAT THE TEST WILL RUN QUICKLY
-    if z not in {1, 7, 23, 63, 159, 383, 895, 2047, 4607, 10239, 22527, 49151}:
-        assert not Integer(z).is_woodall
-    else:
+    if z in {1, 7, 23, 63, 159, 383, 895, 2047, 4607}:
         assert Integer(z).is_woodall
+    else:
+        assert not Integer(z).is_woodall
 
 
 @given(st.integers(max_value=1e4))
 def test_is_woodall_prime(z):
-    # THIS IS A COPOUT SO THAT THE TEST WILL RUN QUICKLY
-    if z not in {7, 23, 383}:
-        assert not Integer(z).is_woodall_prime
-    else:
+    if z in {7, 23, 383}:
         assert Integer(z).is_woodall_prime
+    else:
+        assert not Integer(z).is_woodall_prime
+
+
+@given(st.integers(max_value=1e4))
+def test_is_cullen(z):
+    if z in {1, 3, 9, 25, 65, 161, 385, 897, 2049, 4609}:
+        assert Integer(z).is_cullen
+    else:
+        assert not Integer(z).is_cullen
+
+
+@given(st.integers(max_value=1e4))
+def test_is_cullen_prime(z):
+    if z == 3:  # Only Cullen prime less than 10,000
+        assert Integer(z).is_cullen_prime
+    else:
+        assert not Integer(z).is_cullen_prime
 
 
 @given(st.integers(max_value=1e4))

@@ -295,19 +295,16 @@ class Integer(int):
         """A Woodall number is an integer, W, of the form W = k*2**k - 1, where
         k is an integer
         """
-        # TODO: fix this
         if self.num < 1:
             return False
         w = self.num + 1
-        return any(map(
-            lambda z, w=w: z * 2 ** z == w,
-            range(0, int(pow(w, 1/3)) + 1))
-        )
-        # for candidate in range_to_check:
-        #     if candidate * 2 ** candidate == w:
-        #         return True
-        # else:
-        #     return False
+
+        def woodall(k, w=w):
+            return k * 2 ** k == w
+        # woodall = lambda k, w=w: k * 2 ** k == w
+        range_of_k_to_check = range(1, 4) if self.num < 64 else \
+            range(1, int(pow(w, 1/3)) + 1)
+        return any(map(woodall, range_of_k_to_check))
 
     @property
     def is_woodall_prime(self):
@@ -321,15 +318,26 @@ class Integer(int):
         """A Cullen number is a natural number, C, of the form C = k*2**k  + 1,
         where k is an integer
         """
-        # TODO: just like Woodall, once fix logic
+        k = 1
+        w = self.num - 1
+        candidate = k*2**k
+        while candidate <= w:
+            if w == candidate:
+                return True
+            k += 1
+            candidate = k*2**k
+            continue
+        else:
+            return False
 
     @property
     def is_cullen_prime(self):
         """A Cullen prime is a prime, p of the form p = k*2**k + 1, where k is
         an integer
         """
-        pass
-        # return is_prime(self.num) and self.is_cullen
+        return is_prime(self.num) and self.is_cullen
+
+    # TODO: Proth next https://en.wikipedia.org/wiki/Proth_number#Proth_primes
 
     @property
     def nearest_prime(self):
