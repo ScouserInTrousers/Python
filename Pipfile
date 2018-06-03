@@ -4,11 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pytest = "*"
-hypothesis = "*"
-jupyter = "*"
 
 [dev-packages]
+jupyter = "*"
+hypothesis = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.6"
