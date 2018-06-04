@@ -214,9 +214,9 @@ class Integer(int):
 
     @property
     def divisors(self):
-        """Returns the set of divisors of Integer()
+        """Returns the set of proper divisors of Integer()
         """
-        return {x for x in range(1, self.num // 2 + 1) if self.num % x == 0}
+        return {x for x in range(1, self.num // 2 + 1) if not self.num % x}
 
     @property
     def euler_totient(self):
@@ -249,13 +249,35 @@ class Integer(int):
         expression of an even number as a sum of two primes
         """
 
-        partitions = set()
         if self.parity == "Odd":
-            return partitions
-        for p in range(2, self.num // 2 + 1):
-            if all((is_prime(p), is_prime(self.num - p))):
-                partitions.add((p, self.num-p))
-        return set(partitions)
+            return set()
+        return set((p, self.num-p)
+                   for p in range(2, self.num // 2 + 1)
+                   if is_prime(p) and is_prime(self.num - p))
+
+    @property
+    def is_cullen(self):
+        """A Cullen number is a natural number, C, of the form C = k*2**k  + 1,
+        where k is an integer
+        """
+        k = 1
+        w = self.num - 1
+        candidate = k*2**k
+        while candidate <= w:
+            if w == candidate:
+                return True
+            k += 1
+            candidate = k*2**k
+            continue
+        else:
+            return False
+
+    @property
+    def is_cullen_prime(self):
+        """A Cullen prime is a prime, p of the form p = k*2**k + 1, where k is
+        an integer
+        """
+        return is_prime(self.num) and self.is_cullen
 
     @property
     def is_mersenne(self):
@@ -301,7 +323,6 @@ class Integer(int):
 
         def woodall(k, w=w):
             return k * 2 ** k == w
-        # woodall = lambda k, w=w: k * 2 ** k == w
         range_of_k_to_check = range(1, 4) if self.num < 64 else \
             range(1, int(pow(w, 1/3)) + 1)
         return any(map(woodall, range_of_k_to_check))
@@ -312,32 +333,6 @@ class Integer(int):
         k is an integer
         """
         return is_prime(self.num) and self.is_woodall
-
-    @property
-    def is_cullen(self):
-        """A Cullen number is a natural number, C, of the form C = k*2**k  + 1,
-        where k is an integer
-        """
-        k = 1
-        w = self.num - 1
-        candidate = k*2**k
-        while candidate <= w:
-            if w == candidate:
-                return True
-            k += 1
-            candidate = k*2**k
-            continue
-        else:
-            return False
-
-    @property
-    def is_cullen_prime(self):
-        """A Cullen prime is a prime, p of the form p = k*2**k + 1, where k is
-        an integer
-        """
-        return is_prime(self.num) and self.is_cullen
-
-    # TODO: Proth next https://en.wikipedia.org/wiki/Proth_number#Proth_primes
 
     @property
     def nearest_prime(self):
