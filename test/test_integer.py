@@ -1,13 +1,45 @@
 from decimal import Decimal
 import fractions
-from hypothesis import given, strategies as st
-from integer import is_prime, Integer
 import itertools as it
 import math
 import operator
-import pytest as pt
 import string
 from functools import reduce
+
+from hypothesis import given, strategies as st
+import more_itertools as mit
+import pytest as pt
+
+from integer import is_prime, Integer, sequence, generate_primes
+
+# Maybe make a fixture here that takes a given logic, e.g. is_woodall, and a max
+# value that Hypothesis takes, and return all the examples up to that number.
+# Clearly, it is infeasible to test up to the max of st.integers() for each
+# method, but it is more justifiable to make a limit that is passed in, e.g. by
+# pytest.ini and adhere to that.
+
+
+# HELPERS TESTS #
+@given(st.integers(min_value=0))
+def test_sequence(maximum):
+    seq = sequence()
+    if maximum == 0:
+        assert next(seq) == 0
+    elif maximum == 1:
+        next(seq)
+        assert next(seq) == 1
+    else:
+        s = mit.spy(seq, maximum)[0]
+        for i in range(1, len(s)):
+            assert abs(s[i]) == abs(s[i-1]) + 1
+            assert s[i] + s[i-1] in (1, -1)
+
+
+@given(st.integers(min_value=1))
+def test_generate_primes(how_many):
+    primes = generate_primes()
+    for _ in range(how_many):
+        assert is_prime(next(primes))
 
 
 # INIT TEST #
@@ -151,7 +183,7 @@ def test_is_perfect_power(z, k):
     elif k == 1:
         assert Integer(z).is_perfect_power(k)
     else:
-        if (z ** (1./k)).is_integer():
+        if (z ** (1/k)).is_integer():
             assert Integer(z).is_perfect_power(k)
         else:
             assert not Integer(z).is_perfect_power(k)
@@ -183,9 +215,15 @@ def test_is_power_of(z, n):
 
 
 # PRIMALITY TEST #
-@given(st.integers(max_value=1e15).filter(lambda x: x % 2 == 0))
-def test_is_prime_false_for_any_even_integer(z):
-    assert not is_prime(z)
+@given(st.integers(max_value=1e15))
+def test_is_prime_false_for_any_integer_not_ending_in_1379(z):
+    if z <= 1:
+        assert not is_prime(z)
+    elif z == 2:
+        assert is_prime(z)
+    else:
+        if str(z)[-1] not in map(str, (1, 3, 7, 9)):
+            assert not is_prime(z)
 
 
 # PROPERTY TEST #
@@ -198,8 +236,7 @@ def test_binary(z):
 def test_decomposition(z):
     assert isinstance(Integer(z).decomposition, dict)
     assert z == reduce(lambda x, y: x * y,
-                       (z for z in (k**v for k, v in
-                                    Integer(z).decomposition.items())))
+                       (k**v for k, v in Integer(z).decomposition.items()))
 
 
 @given(st.integers(max_value=1e4))
@@ -241,8 +278,7 @@ def test_factorial(z):
 def test_factorization(z):
     assert Integer(z).factorization == \
         ' * '.join((''.join((str(k), '^', str(v)))
-                    for k, v in Integer(z).decomposition.items()
-                    ))
+                    for k, v in Integer(z).decomposition.items()))
 
 
 @given(st.integers(max_value=1e3))
@@ -341,15 +377,37 @@ def test_is_cullen_prime(z):
 
 @given(st.integers(max_value=1e4))
 def test_nearest_prime(z):
-    if z <= 1:
-        assert Integer(z).nearest_prime == (2,)
-    elif z == 9:
-        assert Integer(z).nearest_prime == (7, 11)
+    def generate_primes_before_n(n):
+        p = generate_primes()
+        largest_so_far = next(p)
+        while largest_so_far < n:
+            yield largest_so_far
+            largest_so_far = next(p)
+
+    def generate_primes_after_n(n):
+        p = generate_primes()
+        largest_so_far = next(p)
+        while largest_so_far < n:
+            largest_so_far = next(p)
+
+        yield largest_so_far
+        while True:
+            yield next(p)
+
+    np = Integer(z).nearest_prime
+    if z <= 0:
+        assert np == (2,)
     elif is_prime(z):
-        assert Integer(z).nearest_prime == (z,)
+        assert np == (z,)
     else:
-        # THIS IS A COPOUT SO THAT THE TEST WILL RUN QUICKLY
-        pass
+        closest_before_z = max(generate_primes_before_n(z))
+        closest_after_z = next(generate_primes_after_n(z))
+        if abs(z - closest_before_z) == abs(z - closest_after_z):
+            assert np == (closest_before_z, closest_after_z) or \
+                np == (closest_after_z, closest_before_z)
+        else:
+            assert np == (min(closest_after_z, closest_before_z,
+                              key=lambda n, z=z: abs(z-n)),)
 
 
 @given(st.integers(max_value=1e4))

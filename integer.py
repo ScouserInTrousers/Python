@@ -20,6 +20,30 @@ def is_prime(z):
         return True
 
 
+def sequence():
+    """ Generate the following sequence:
+    0, 1, -2, 3, -4, 5, -6, 7, -8, ...
+    """
+    n = 1
+    yield 0
+    while True:
+        yield n
+        sign = -1 if n % 2 else 1
+        n = sign * (abs(n) + 1)
+
+
+def generate_primes():
+    """ Sieve of Eratosthenes variation to generate primes
+    """
+    found = list()
+    candidate = 2
+    while True:
+        if all(candidate % prime for prime in found):
+            yield candidate
+            found.append(candidate)
+        candidate += 1
+
+
 class Integer(int):
     """
     A Python object to represent an integer with a superset of the
@@ -342,41 +366,21 @@ class Integer(int):
             (tuple)
         """
 
-        z = self.num
-        if z <= 1:
+        if self.num <= 1:
             return (2,)
-        if is_prime(z):
-            return (z,)
-
-        # Generator to get the first prime before z
-        def before(z):
-            i = z - 1
-            while True:
-                if is_prime(i):
-                    yield i
-                else:
-                    i -= 1
-                    continue
-
-        # Generator to get the first prime after z
-        def after(z):
-            i = z + 1
-            while True:
-                if is_prime(i):
-                    yield i
-                else:
-                    i += 1
-                    continue
-
-        first_before_z = next(before(z))
-        first_after_z = next(after(z))
-
-        if abs(first_before_z - z) < abs(first_after_z - z):
-            return (first_before_z,)
-        elif abs(first_before_z - z) > abs(first_after_z - z):
-            return (first_after_z,)
+        elif is_prime(self.num):
+            return (self.num,)
         else:
-            return (first_before_z, first_after_z)
+            z, s = self.num, sequence()
+
+        while not is_prime(z):
+            z += next(s)
+        else:
+            nearest = z - self.num
+
+        # Is there another prime equidistant?
+        return (z,) if not is_prime(self.num - nearest) else \
+            tuple(sorted(z, self.num - nearest))
 
     @property
     def Omega(self):
