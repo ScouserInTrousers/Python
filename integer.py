@@ -320,8 +320,8 @@ class Integer(int):
     @property
     def is_perfect(self):
         """A positive integer is perfect if it is equal to the sum of its
-        positive divisors excluding itself; for instance 6 has divisors
-        {1, 2, 3, 6} and 1 + 2 + 3 = 6.
+        proper divisors; for instance, 6 has divisors {1, 2, 3, 6} (of which
+        {1, 2, 3} are the proper divisors) and 1 + 2 + 3 = 6
         """
         return self.sigma == 2 * self.num
 
@@ -484,7 +484,7 @@ def nth_most_divisors(n):
     while z >= 1:
         # Get the number of divisors of the current integer
         dz = Integer(z).tau
-        # Main logic of the program
+
         if dz > max(record):
             record.append(dz)
             if len(record) == n:

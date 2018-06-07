@@ -403,8 +403,7 @@ def test_nearest_prime(z):
         closest_before_z = max(generate_primes_before_n(z))
         closest_after_z = next(generate_primes_after_n(z))
         if abs(z - closest_before_z) == abs(z - closest_after_z):
-            assert np == (closest_before_z, closest_after_z) or \
-                np == (closest_after_z, closest_before_z)
+            assert np == (closest_before_z, closest_after_z)
         else:
             assert np == (min(closest_after_z, closest_before_z,
                               key=lambda n, z=z: abs(z-n)),)
