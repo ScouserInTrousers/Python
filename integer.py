@@ -278,6 +278,32 @@ class Integer(int):
         return set((p, self.num-p)
                    for p in range(2, self.num // 2 + 1)
                    if is_prime(p) and is_prime(self.num - p))
+    
+    @property
+    def is_balanced_prime(self):
+        """A balanced prime is a prime, p, that is the average of
+        the preceding and succeeding primes. Equivalently, if P is
+        the previous prime and N is the next prime, then, for p to
+        be a balanced prime, |N-p| = |P-p|; i.e. they must be 
+        equidistant from p
+        """
+        if self.primality == 'Composite':
+            return False
+        z = self.num
+
+        preceding_prime_candidate, succeeding_prime_candidate = (z, z)
+
+        preceding_prime_candidate -= 1
+        while not is_prime(preceding_prime_candidate):
+            preceding_prime_candidate -= 1
+        else:
+            preceding_prime = preceding_prime_candidate
+
+        # Shortcut: instead of repeating the search for n \in N
+        # that are greater than z, just check if the succeeding
+        # prime is the same distance from z
+        distance_from_z = z - preceding_prime
+        return True if is_prime(z + distance_from_z) else False
 
     @property
     def is_cullen(self):
