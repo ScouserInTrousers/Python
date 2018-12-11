@@ -171,7 +171,7 @@ def test_not_equal(z1, z2):
 # STATIC METHOD TEST #
 @given(st.integers(), st.integers())
 def test_gcd(a, b):
-    assert Integer.gcd(a, b) == fractions.gcd(a, b)
+    assert Integer.gcd(a, b) == math.gcd(a, b)
 
 
 # METHOD TEST #
