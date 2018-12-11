@@ -7,7 +7,7 @@ of the mathematical object "integer", without importing _any_ module.
 To start, you'll need [pipenv](https://docs.pipenv.org/) from either
 Homebrew or `pip`. Then, clone the repo and from the repo root, run 
 ```bash
-pipenv install --dev && pipenv shell
+pipenv install --dev
 ```
 This will install the packages specified in Pipfile into a virtual
 environment, and activate that virtual environment. Then, to run
