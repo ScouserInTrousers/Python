@@ -1,15 +1,11 @@
 [[source]]
+name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
-name = "pypi"
-
-[packages]
 
 [dev-packages]
-jupyter = "*"
-hypothesis = "*"
 pytest = "*"
+hypothesis = "*"
 more-itertools = "*"
 
-[requires]
-python_version = "3.6"
+[packages]
