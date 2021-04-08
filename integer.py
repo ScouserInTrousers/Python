@@ -291,7 +291,7 @@ class Integer(int):
             return False
         z = self.num
 
-        preceding_prime_candidate, succeeding_prime_candidate = (z, z)
+        preceding_prime_candidate = z
 
         preceding_prime_candidate -= 1
         while not is_prime(preceding_prime_candidate):
